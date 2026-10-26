@@ -263,13 +263,85 @@ it('stages only a reviewed selected reference excerpt without creating a verifie
  const ui=await mount(initial);await ui.click('资料');await ui.click('选取片段用于提问');const excerpt=ui.host.querySelector<HTMLTextAreaElement>('[aria-label="本次要发送的选取片段"]')!;expect(excerpt.value).toBe('');await inputField(excerpt,'只选这一句');expect(ui.controller.pendingDocument().drafts.messages).toEqual({});await ui.click('确认加入材料草稿');const draft=ui.controller.pendingDocument().drafts.messages['material:c'];expect(draft).toContain('只选这一句');expect(draft).toContain('未核验');expect(draft).toContain('2026-10-05');expect(draft).not.toContain('完整用户提供材料');expect(ui.controller.pendingDocument().state.columns[0].source).toBeUndefined();expect(ui.controller.pendingDocument().state.columns[0].plan).toBeNull();expect(ui.controller.pendingDocument().state.usageRecords).toEqual([]);expect(ui.host.querySelector('iframe')).toBeNull();await ui.click('选取片段用于提问');await inputField(ui.host.querySelector<HTMLTextAreaElement>('[aria-label="本次要发送的选取片段"]')!,'x'.repeat(20000));await ui.click('确认加入材料草稿');expect(ui.host.textContent).toContain('20,000');expect(ui.controller.pendingDocument().drafts.messages['material:c']).toBe(draft);expect(ui.controller.pendingDocument().drafts.references).toEqual(initial.drafts.references);
 });
 it('confirms a manually chosen knowledge block locally with no AI planning request',async()=>{const initial=emptyBrowserDocument();initial.state.onboarding.introSeen=true;const ui=await mount(initial);await ui.click('可选 AI 教学');await inputField(ui.host.querySelector<HTMLInputElement>('[aria-label="新栏目名称"]')!,'函数');await inputField(ui.host.querySelector<HTMLInputElement>('[aria-label="新栏目目标"]')!,'运行函数');await ui.click('创建本次栏目');await inputField(ui.host.querySelector<HTMLInputElement>('[aria-label="本次知识块"]')!,'参数');await inputField(ui.host.querySelector<HTMLInputElement>('[aria-label="学完能做什么"]')!,'运行最小例子');await ui.click('确认本次知识块');await ui.click('开始学习这块');expect(ui.controller.pendingDocument().state.columns[0].phase).toBe('study');expect(ui.controller.pendingDocument().state.columns[0].messages).toEqual([]);expect(ui.controller.pendingDocument().state.columns[0].evidence).toEqual([]);expect(ui.controller.pendingDocument().state.usageRecords).toEqual([]);});
-it('retains accepted paid recovery while selecting another teaching column',async()=>{
- const {createColumn,confirmPlan,beginStudy}=await import('../src/core/learning');const initial=emptyBrowserDocument();initial.state.onboarding.introSeen=true;initial.state.settings.modelLibrary={profiles:[browserProfile],active:{profileId:'phone',model:'phone-model'}};initial.state.columns=['c','other'].map(id=>beginStudy(confirmPlan(createColumn(id,'运行', '2026-10-05T00:00:00.000Z',id),{target:'运行',steps:[{id:`step-${id}`,title:'函数',outcome:'运行',priority:1}]})));initial.state.activeColumnId='c';
- const repository=await openBrowserRepository(new IDBFactory());realRepositories.push(repository);await repository.commit(initial,0);const controller=await createBrowserController(repository);realControllers.push(controller);let response!:(r:Response)=>void;const fetch=vi.fn(()=>new Promise<Response>(resolve=>response=resolve));vi.stubGlobal('fetch',fetch);
- try{const ui=await mount(undefined,controller);await ui.click('设置');await act(async()=>ui.host.querySelector<HTMLButtonElement>('[aria-label="编辑 手机接口"]')!.click());await inputField(ui.host.querySelector<HTMLInputElement>('input[type="password"]')!,'fixture-key');await ui.click('保存修改');await act(async()=>controller.flush());await ui.click('学习');await ui.click('可选 AI 教学');await inputField(ui.host.querySelector<HTMLTextAreaElement>('[aria-label="向 AI 提问"]')!,'问题');await act(async()=>controller.flush());await ui.click('发送问题');await act(async()=>{await new Promise(r=>setTimeout(r,5));});expect(fetch).toHaveBeenCalledTimes(1);
- await inputField(ui.host.querySelector<HTMLSelectElement>('[aria-label="当前教学栏目"]')!,'other');await act(async()=>controller.flush());const commit=repository.commit;let fail=true;repository.commit=async(d,r)=>{if(fail&&d.state.usageRecords.length)throw Error('空间不足');return commit(d,r);};await act(async()=>{response(new Response(JSON.stringify({choices:[{message:{content:'原付费结果'}}],usage:{prompt_tokens:2,completion_tokens:1}}),{status:200}));await new Promise(r=>setTimeout(r,10));});
- await inputField(ui.host.querySelector<HTMLSelectElement>('[aria-label="当前教学栏目"]')!,'c');await act(async()=>{await new Promise(r=>setTimeout(r,5));});const retry=[...ui.host.querySelectorAll('button')].find(b=>b.textContent==='仅重试保存');expect(retry).toBeTruthy();fail=false;await act(async()=>{retry!.click();await new Promise(r=>setTimeout(r,10));});expect(fetch).toHaveBeenCalledTimes(1);expect(controller.pendingDocument().state.columns[0].messages.at(-1)?.content).toBe('原付费结果');
- }finally{vi.unstubAllGlobals();}
+it('retains accepted paid recovery while selecting another teaching column', async () => {
+  const {createColumn, confirmPlan, beginStudy} = await import('../src/core/learning');
+  const initial = emptyBrowserDocument(); initial.state.onboarding.introSeen = true;
+  initial.state.settings.modelLibrary = {profiles: [browserProfile], active: {profileId: 'phone', model: 'phone-model'}};
+  initial.state.columns = ['c', 'other'].map(id => beginStudy(confirmPlan(createColumn(id, '运行', '2026-10-05T00:00:00.000Z', id), {
+    target: '运行', steps: [{id: `step-${id}`, title: '函数', outcome: '运行', priority: 1}],
+  })));
+  initial.state.activeColumnId = 'c';
+  const repository = await openBrowserRepository(new IDBFactory()); realRepositories.push(repository);
+  await repository.commit(initial, 0);
+  const controller = await createBrowserController(repository); realControllers.push(controller);
+  let response!: (reply: Response) => void;
+  const fetch = vi.fn(() => new Promise<Response>(resolve => {response = resolve;})); vi.stubGlobal('fetch', fetch);
+  let releaseRetry!: () => void;
+  const retryGate = new Promise<void>(resolve => {releaseRetry = resolve;});
+  let primaryFailed = false;
+  try {
+    const ui = await mount(undefined, controller);
+    await ui.click('设置');
+    await act(async () => ui.host.querySelector<HTMLButtonElement>('[aria-label="编辑 手机接口"]')!.click());
+    await inputField(ui.host.querySelector<HTMLInputElement>('input[type="password"]')!, 'fixture-key');
+    await ui.click('保存修改'); await act(async () => controller.flush());
+    await ui.click('学习'); await ui.click('可选 AI 教学');
+    await inputField(ui.host.querySelector<HTMLTextAreaElement>('[aria-label="向 AI 提问"]')!, '问题');
+    await act(async () => controller.flush()); await ui.click('发送问题');
+    await act(async () => {await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));});
+    await inputField(ui.host.querySelector<HTMLSelectElement>('[aria-label="当前教学栏目"]')!, 'other');
+    await act(async () => controller.flush());
+    const commit = repository.commit;
+    let fail = true;
+    let retryCommitStarted = false;
+    repository.commit = async (document, revision) => {
+      if (document.state.usageRecords.length) {
+        if (fail) throw Error('空间不足');
+        // Recovery must finish its usage/context write before it can append the reply.
+        // Hold that real storage boundary so completion cannot depend on machine speed.
+        retryCommitStarted = true;
+        await retryGate;
+      }
+      return commit(document, revision);
+    };
+    await act(async () => {
+      response(new Response(JSON.stringify({choices: [{message: {content: '原付费结果'}}], usage: {prompt_tokens: 2, completion_tokens: 1}}), {status: 200}));
+      await vi.waitFor(() => expect(controller.isBusy()).toBe(false));
+    });
+    await inputField(ui.host.querySelector<HTMLSelectElement>('[aria-label="当前教学栏目"]')!, 'c');
+    await act(async () => {await vi.waitFor(() => expect(controller.isBusy()).toBe(false));});
+    const retry = [...ui.host.querySelectorAll('button')].find(button => button.textContent === '仅重试保存');
+    expect(retry).toBeTruthy();
+    fail = false;
+    await act(async () => {
+      retry!.click();
+      await vi.waitFor(() => expect(retryCommitStarted).toBe(true));
+    });
+    expect(controller.pendingDocument().state.columns[0].messages.at(-1)?.content).toBe('问题');
+    await act(async () => {
+      releaseRetry();
+      await vi.waitFor(() => expect(controller.isBusy()).toBe(false));
+      await controller.flush();
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(controller.pendingDocument().state.columns[0].messages.at(-1)?.content).toBe('原付费结果');
+    const saved = (await repository.load()).document;
+    expect(saved.state.columns[0].messages.map(message => message.content)).toEqual(['问题', '原付费结果']);
+    expect(saved.state.columns[1].messages).toEqual([]);
+    expect(saved.state.usageRecords).toHaveLength(1);
+  } catch (error) {
+    primaryFailed = true;
+    throw error;
+  } finally {
+    try {
+      releaseRetry();
+      await act(async () => {await vi.waitFor(() => expect(controller.isBusy()).toBe(false));});
+    } catch (cleanupError) {
+      if (!primaryFailed) throw cleanupError;
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  }
 });
 
 it('keeps newer column title and goal edits dirty when the earlier create finishes saving', async () => {

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS accounts (id TEXT PRIMARY KEY, owner_slot INTEGER NOT NULL DEFAULT 1 UNIQUE CHECK(owner_slot=1), created_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS devices (id TEXT PRIMARY KEY, account_id TEXT NOT NULL REFERENCES accounts(id), name TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, revoked_at INTEGER);
+CREATE TABLE IF NOT EXISTS pairing_codes (code_hash TEXT PRIMARY KEY, account_id TEXT NOT NULL REFERENCES accounts(id), expires_at INTEGER NOT NULL, used_at INTEGER);
+CREATE TABLE IF NOT EXISTS pairing_attempts (scope TEXT PRIMARY KEY, window_start INTEGER NOT NULL, attempts INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS sync_entities (account_id TEXT NOT NULL, module_id TEXT NOT NULL, entity_id TEXT NOT NULL, envelope TEXT NOT NULL, PRIMARY KEY(account_id,module_id,entity_id));
+CREATE TABLE IF NOT EXISTS sync_changes (cursor INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, batch_id TEXT NOT NULL, change_json TEXT NOT NULL, UNIQUE(account_id,batch_id));
+CREATE INDEX IF NOT EXISTS sync_changes_by_account ON sync_changes(account_id,cursor);
+CREATE TABLE IF NOT EXISTS sync_batches (account_id TEXT NOT NULL, batch_id TEXT NOT NULL, fingerprint TEXT NOT NULL, result_json TEXT NOT NULL, PRIMARY KEY(account_id,batch_id));
+CREATE TABLE IF NOT EXISTS sync_operations (account_id TEXT NOT NULL, operation_id TEXT NOT NULL, batch_id TEXT NOT NULL, PRIMARY KEY(account_id,operation_id));
+PRAGMA user_version=1;

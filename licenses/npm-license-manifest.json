@@ -199,5 +199,37 @@
     "sha256": "cdf4d87ae0a6c160227263bf4e39a0a10e30e89ae7256e0f7ac7bde0836552c6",
     "source": "https://github.com/fb55/boolbase/blob/be0bcd8a4e917a0a5895e95b523fbbed05a64871/LICENSE",
     "note": "Version 1.0.0 declares ISC but omits a license file; upstream full text is supplied here."
+  },
+  {
+    "package": "@noble/hashes",
+    "version": "2.4.0",
+    "license": "MIT",
+    "file": "noble-hashes-2.4.0-LICENSE",
+    "sha256": "4f221aee6e072336700c408c68ab3b96a3fc09f6aebe6f48f1bd99e5ef13faec",
+    "source": "https://registry.npmjs.org/@noble/hashes/-/hashes-2.4.0.tgz"
+  },
+  {
+    "package": "pdfjs-dist",
+    "version": "6.4.299",
+    "license": "Apache-2.0",
+    "file": "pdfjs-dist-6.4.299-LICENSE",
+    "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+    "source": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz"
+  },
+  {
+    "package": "@capacitor/core",
+    "version": "8.5.3",
+    "license": "MIT",
+    "file": "Capacitor-core-8.5.3-LICENSE.txt",
+    "sha256": "9c6ebf3e5ab832ba4d5af38f340978e1fedbfee6e3d23662dfdb8917a9d864dd",
+    "source": "https://registry.npmjs.org/@capacitor/core/-/core-8.5.3.tgz"
+  },
+  {
+    "package": "@capacitor/android",
+    "version": "8.5.3",
+    "license": "MIT",
+    "file": "Capacitor-android-8.5.3-LICENSE.txt",
+    "sha256": "9c6ebf3e5ab832ba4d5af38f340978e1fedbfee6e3d23662dfdb8917a9d864dd",
+    "source": "https://registry.npmjs.org/@capacitor/android/-/android-8.5.3.tgz"
   }
 ]

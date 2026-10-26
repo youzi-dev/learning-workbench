@@ -1,0 +1,26 @@
+.wb-backup {display:grid;gap:18px;max-width:800px;padding:24px;border:1px solid #dbe2ed;border-radius:20px;background:#fff;color:#24324a;}
+.wb-backup h2,.wb-backup h3 {margin:0 0 10px;font-size:20px;}
+.wb-backup h3 {font-size:17px;}
+.wb-backup p {margin:8px 0;line-height:1.6;color:#52627b;}
+.wb-backup-actions,.wb-backup-preview {display:flex;flex-wrap:wrap;align-items:center;gap:12px;}
+.wb-backup-preview {display:grid;padding:18px;border-radius:14px;background:#f4f7fb;}
+.wb-backup label {display:flex;align-items:center;gap:8px;font-size:14px;}
+.wb-backup button,.wb-backup-import {padding:10px 16px;border:1px solid #bdcce3;border-radius:10px;background:#f5f8ff;color:#264974;font:inherit;cursor:pointer;}
+.wb-backup button:disabled {opacity:.55;cursor:wait;}
+.wb-backup-import input {width:180px;max-width:100%;font-size:12px;}
+.wb-backup dl {display:flex;flex-wrap:wrap;gap:24px;margin:0;}
+.wb-backup dt {font-size:13px;color:#64748b;}
+.wb-backup dd {margin:6px 0;font-size:24px;font-weight:650;}
+.wb-backup .wb-backup-error {color:#ae302b;}
+@media(max-width:480px){.wb-backup{padding:18px}.wb-backup-actions{align-items:stretch;flex-direction:column}.wb-backup-import{align-items:flex-start;flex-direction:column}}
+/* §1.5/§5.6: recovery stays visually consistent while preserving all warnings. */
+.wb-backup {padding: var(--wb-space-6); gap: var(--wb-space-6); color: var(--wb-ink); background: var(--wb-paper); border-color: var(--wb-line); border-radius: var(--wb-radius-lg);}
+.wb-backup h2 {font-size: var(--wb-text-section); font-weight: 600;}
+.wb-backup h3 {font-size: var(--wb-text-base); font-weight: 600;}
+.wb-backup p,.wb-backup dt {color: var(--wb-secondary);}
+.wb-backup-preview {background: var(--wb-soft); padding: var(--wb-space-4); border-radius: var(--wb-radius);}
+.wb-backup button,.wb-backup-import {min-height: 40px; padding: var(--wb-space-2) var(--wb-space-4); color: var(--wb-green); background: var(--wb-paper); border-color: var(--wb-line); border-radius: var(--wb-radius-sm);}
+.wb-backup button:hover:not(:disabled),.wb-backup-import:hover {background: var(--wb-green-soft);}
+.wb-backup dd {font-weight: 600;}
+.wb-backup .wb-backup-error {color: var(--wb-danger);}
+@media(max-width:480px) {.wb-backup {padding: var(--wb-space-4);}.wb-backup button,.wb-backup-import {min-height: 44px;}}

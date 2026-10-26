@@ -1,0 +1,32 @@
+[
+  {
+    "file": "SQLCipher-Android-4.19.1-LICENSE.txt",
+    "source": "https://raw.githubusercontent.com/sqlcipher/sqlcipher-android/v4.19.1/LICENSE",
+    "sha256": "09e4af560ce2e3c9c2aa6b564e35947b03db7d1ae345f22a32793ed46542cc14"
+  },
+  {
+    "file": "SQLCipher-Core-4.19.0-LICENSE.txt",
+    "source": "https://raw.githubusercontent.com/sqlcipher/sqlcipher/v4.19.0/LICENSE.md",
+    "sha256": "2a2826f6acf46fa650730cf42cbb22a642be33a7ef119c9c4f4bf6daf3bef48e"
+  },
+  {
+    "file": "Capacitor-core-8.5.3-LICENSE.txt",
+    "source": "@capacitor/core@8.5.3 published LICENSE",
+    "sha256": "9c6ebf3e5ab832ba4d5af38f340978e1fedbfee6e3d23662dfdb8917a9d864dd"
+  },
+  {
+    "file": "Capacitor-android-8.5.3-LICENSE.txt",
+    "source": "@capacitor/android@8.5.3 published LICENSE",
+    "sha256": "9c6ebf3e5ab832ba4d5af38f340978e1fedbfee6e3d23662dfdb8917a9d864dd"
+  },
+  {
+    "file": "SQLite-3.53.4-PUBLIC-DOMAIN.txt",
+    "source": "https://www.sqlite.org/copyright.html (paraphrased public-domain notice)",
+    "sha256": "7e0de95822477b342f25a04f690225693a624904a522e68f5655266d53b36a04"
+  },
+  {
+    "file": "LibTomCrypt-476a957-LICENSE.txt",
+    "source": "https://raw.githubusercontent.com/sqlcipher/libtomcrypt/476a9579ae94f32b9ea9e2747bfb04b302370259/LICENSE",
+    "sha256": "8f196cb13afd271f5e267fd29543fc454596382ad580e7592709492843996ac8"
+  }
+]

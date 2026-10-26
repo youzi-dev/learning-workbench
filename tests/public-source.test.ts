@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, readdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, mkdir, readFile, readdir, realpath, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,6 +55,127 @@ async function filesUnder(directory: string, prefix = ''): Promise<string[]> {
 }
 
 describe('fresh public source export', () => {
+  it('exports complete minimal native/server source, exact public docs and executable modes', async () => {
+    const selected = [
+      'README.md', 'THIRD_PARTY_NOTICES.md', 'docs/public-source.md',
+      '.dockerignore', 'capacitor.config.ts', 'vite.android.config.ts', 'android-web/index.html',
+      'server/cli.ts', 'server/migrations/001-initial.sql', 'worker/main.ts',
+      'android/build.gradle', 'android/settings.gradle', 'android/variables.gradle',
+      'android/app/build.gradle', 'android/app/capacitor.build.gradle', 'android/app/proguard-rules.pro',
+      'android/capacitor.settings.gradle', 'android/gradle.properties', 'android/gradlew', 'android/gradlew.bat',
+      'android/gradle/wrapper/gradle-wrapper.properties', 'android/gradle/wrapper/gradle-wrapper.jar',
+      'android/app/src/main/AndroidManifest.xml', 'android/app/src/main/java/dev/growthworkbench/app/MainActivity.java',
+      'android/app/src/main/res/values/strings.xml', 'android/app/src/main/res/mipmap-mdpi/ic_launcher.png',
+      'android/app/src/main/assets/licenses/sources.json', 'licenses/android-native/Apache-2.0.txt',
+      'deploy/.env.example', 'deploy/server.Dockerfile', 'deploy/worker.Dockerfile', 'deploy/Caddyfile',
+      'deploy/compose.yaml', 'deploy/backup.sh', 'deploy/restore.sh', 'deploy/egress-guard.sh', 'deploy/egress.conf',
+      'deploy/licenses/NOTICE.md', 'docs/operations/deployment.md', 'docs/operations/backup-restore.md',
+      'docs/operations/offhost-backup.md', 'docs/operations/capture-broker.md',
+      'docs/releases/personal-workbench-acceptance.md', 'docs/research/2026-10-24-capture-source-evidence.json',
+    ];
+    const inputs: Record<string, Buffer> = {};
+    for (const relative of selected) inputs[relative] = await readFile(new URL('../' + relative, import.meta.url));
+    const {source, output} = await fixture({
+      ...inputs,
+      'android/build/private.bin': Buffer.from([0,1]),
+      'android/.gradle/private.bin': Buffer.from([0,1]),
+      'android/local.properties': 'sdk.dir=private-sdk',
+      'android/app/src/main/assets/public/index.html': 'generated web payload',
+      'android/app/src/main/assets/capacitor.config.json': 'generated config',
+      'android/signing/release.key': 'private key',
+      'server/userData/records.json': 'private',
+      'deploy/.env': 'private', 'deploy/capture-dist/worker.mjs': 'built',
+      'deploy/operator-notes.md': 'private', 'docs/research/private.md': 'private',
+    });
+    await chmod(path.join(source, 'android/gradlew'), 0o755);
+    await chmod(path.join(source, 'deploy/backup.sh'), 0o755);
+    const result = run(source, output);
+    expect(result.status, result.stderr).toBe(0);
+    const files = await filesUnder(output);
+    for (const relative of selected) expect(await readFile(path.join(output, relative))).toEqual(inputs[relative]);
+    expect(files.filter(file => /^(android|server|worker|deploy)\//.test(file))).toEqual(selected.filter(file => /^(android|server|worker|deploy)\//.test(file)).sort());
+    expect(files).not.toContain('docs/research/private.md');
+    const manifest = JSON.parse(await readFile(path.join(output, 'PUBLIC_SOURCE_MANIFEST.json'), 'utf8'));
+    expect(manifest.files.find((file: {path: string}) => file.path === 'android/gradlew').mode).toBe('0755');
+    expect((await stat(path.join(output, 'android/gradlew'))).mode & 0o777).toBe(0o755);
+    expect((await stat(path.join(output, 'deploy/backup.sh'))).mode & 0o777).toBe(0o755);
+  });
+
+  it('only admits the pinned wrapper JAR and rejects altered bytes before output creation', async () => {
+    const jar = await readFile(new URL('../android/gradle/wrapper/gradle-wrapper.jar', import.meta.url));
+    expect(createHash('sha256').update(jar).digest('hex')).toBe('7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172');
+    const {source, output} = await fixture({'android/gradle/wrapper/gradle-wrapper.jar': Buffer.concat([jar, Buffer.from('modified')])});
+    const result = run(source, output);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('wrapper integrity');
+    await expect(readdir(output)).rejects.toMatchObject({code:'ENOENT'});
+  });
+
+  it('omits workflows only when explicitly requested while preserving other public GitHub config', async () => {
+    const {source, output} = await fixture({'.github/ISSUE_TEMPLATE/bug.md': 'Public issue template'});
+    const result = run(source, output, ['--omit-workflows']);
+    expect(result.status, result.stderr).toBe(0);
+    expect(await filesUnder(output)).toContain('.github/ISSUE_TEMPLATE/bug.md');
+    expect(await filesUnder(output)).not.toContain('.github/workflows/ci.yml');
+    const manifest = JSON.parse(await readFile(path.join(output, 'PUBLIC_SOURCE_MANIFEST.json'), 'utf8'));
+    expect(manifest.omitWorkflows).toBe(true);
+  });
+
+  it.each(['server/cli.ts', 'worker/main.ts', 'deploy/.env.example', 'android/app/src/main/java/dev/growthworkbench/app/MainActivity.java'])
+    ('scans newly selected source %s for credentials', async relative => {
+      const secret = 'ghp_' + 'A1b2C3d4E5f6'.repeat(4);
+      const {source, output} = await fixture({[relative]: secret});
+      const result = run(source, output);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('credential pattern');
+      expect(result.stderr).not.toContain(secret);
+    });
+
+  it('exports only exact authored document fixtures with pinned PDF bytes', async () => {
+    const selected = ['tests/fixtures/workbench/reading-two-pages.pdf', 'tests/fixtures/workbench/schedule.csv', 'tests/fixtures/workbench/schedule.ics'];
+    const inputs: Record<string, Buffer> = {};
+    for (const relative of selected) inputs[relative] = await readFile(new URL('../' + relative, import.meta.url));
+    const {source, output} = await fixture(inputs);
+    const result = run(source, output);
+    expect(result.status, result.stderr).toBe(0);
+    for (const relative of selected) expect(await readFile(path.join(output, relative))).toEqual(inputs[relative]);
+  });
+
+  it('rejects altered PDF fixture bytes', async () => {
+    const {source, output} = await fixture({'tests/fixtures/workbench/reading-two-pages.pdf': '%PDF-1.7 fake'});
+    const result = run(source, output);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('fixture integrity');
+  });
+
+  it('requires relative links in selected public operations docs to close within the snapshot', async () => {
+    const {source, output} = await fixture({'docs/operations/deployment.md': '[Private runbook](secret-runbook.md)'});
+    const result = run(source, output);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('docs/operations/deployment.md');
+    expect(result.stderr).toContain('link');
+  });
+
+  it('rejects symlink ancestors in exact selected public docs', async () => {
+    const {source, output, root} = await fixture();
+    const outside = path.join(root, 'outside');
+    await mkdir(outside);
+    await writeFile(path.join(outside, 'deployment.md'), 'outside');
+    await symlink(outside, path.join(source, 'docs/operations'));
+    const result = run(source, output);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('symlink');
+  });
+
+  it('writes the manifest modes exactly even under a restrictive process umask', async () => {
+    const {source, output} = await fixture({'android/gradlew': '#!/bin/sh\necho fixture\n'});
+    await chmod(path.join(source, 'android/gradlew'), 0o755);
+    const result = spawnSync(process.execPath, ['--input-type=module', '--eval', 'process.umask(0o077); await import(process.argv[1]);', script, '--source', source, '--output', output], {encoding:'utf8'});
+    expect(result.status, result.stderr).toBe(0);
+    expect((await stat(path.join(output, 'android/gradlew'))).mode & 0o777).toBe(0o755);
+    expect((await stat(path.join(output, 'README.md'))).mode & 0o777).toBe(0o644);
+  });
+
   it('exports optional ASR preparation sources while omitting generated runtime, weights and cache', async () => {
     const selected = ['scripts/prepare-browser-asr.mjs', 'src/browser/voice/resources.json'];
     const sourceFiles: Record<string, Buffer> = {};
@@ -122,7 +243,7 @@ describe('fresh public source export', () => {
       const bytes = await readFile(path.join(source, relative));
       expect((await readFile(path.join(output, relative))).equals(bytes)).toBe(true);
       expect(manifest.files.find((file: { path: string }) => file.path === relative)).toEqual({
-        path: relative, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'),
+        path: relative, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), mode: '0644',
       });
     }
   });
@@ -211,7 +332,7 @@ describe('fresh public source export', () => {
     expect(serialized).not.toContain(source);
     expect(serialized).not.toContain(output);
     const manifest = JSON.parse(serialized);
-    expect(manifest.schemaVersion).toBe(1);
+    expect(manifest.schemaVersion).toBe(2);
     expect(manifest.files.map((file: { path: string }) => file.path)).toEqual(exported.filter(file => file !== 'PUBLIC_SOURCE_MANIFEST.json'));
     for (const file of manifest.files) {
       const data = await readFile(path.join(output, file.path));

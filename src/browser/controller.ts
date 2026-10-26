@@ -28,7 +28,8 @@ const conflict = () => new BrowserStorageError('revision-conflict', '另一个�
 const asStorageError = (cause: unknown) => cause instanceof BrowserStorageError ? cause : new BrowserStorageError('unavailable', '内容尚未保存，请重试或导出待存备份。');
 
 /** Initial read is mandatory: failure cannot create an empty replacement. */
-export async function createBrowserController(repository: BrowserRepository): Promise<BrowserController> {
+export async function createBrowserController(repository: BrowserRepository, options: {validate?: (value: unknown) => BrowserDocument} = {}): Promise<BrowserController> {
+  const validateDocument = options.validate ?? validateBrowserDocument;
   // Subscribe before the initial read: versionchange can close a connection
   // while an already active read/write transaction still completes normally.
   let invalidation: BrowserStorageError | undefined;
@@ -103,7 +104,7 @@ export async function createBrowserController(repository: BrowserRepository): Pr
       // exportable pending document. Explicit lifecycle barriers still can.
       if (closed) throw new BrowserStorageError('unavailable', '此工作台已关闭，请重新打开。');
       if (exclusive || updateLocked) throw blocked();
-      try {candidate = validateBrowserDocument(mutator(copy(pending)));} catch (cause) {throw new BrowserStorageError('invalid', cause instanceof Error ? cause.message : '学习文档格式不正确。');}
+      try {candidate = validateDocument(mutator(copy(pending)));} catch (cause) {throw new BrowserStorageError('invalid', cause instanceof Error ? cause.message : '学习文档格式不正确。');}
     } catch (cause) {return Promise.reject(cause);}
     acceptPending(candidate);
     const version = ++generation;
@@ -158,7 +159,7 @@ export async function createBrowserController(repository: BrowserRepository): Pr
     replace: async input => {
       ensureExclusive(); if (lastError?.code === 'revision-conflict') throw lastError;
       let document: BrowserDocument;
-      try {document = validateBrowserDocument(input);} catch (cause) {throw new BrowserStorageError('invalid', cause instanceof Error ? cause.message : '学习文档格式不正确。');}
+      try {document = validateDocument(input);} catch (cause) {throw new BrowserStorageError('invalid', cause instanceof Error ? cause.message : '学习文档格式不正确。');}
       exclusive = true; documentGeneration++; emit();
       try {
         const next = await repository.replace(document, saved.revision);

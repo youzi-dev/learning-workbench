@@ -1,0 +1,106 @@
+.wb-shell{--wb-bg:#f6f6f2;--wb-paper:#fff;--wb-ink:#2e3836;--wb-muted:#7b8580;--wb-line:#e4e8e1;--wb-green:#486c59;display:flex;min-height:100dvh;background:var(--wb-bg);color:var(--wb-ink);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;letter-spacing:.01em}.wb-shell *{box-sizing:border-box}.wb-shell button,.wb-shell input{font:inherit}.wb-shell button{cursor:pointer}.wb-sidebar{width:222px;flex-shrink:0;background:#fbfcf8;border-right:1px solid var(--wb-line);padding:30px 20px;display:flex;flex-direction:column;position:sticky;top:0;height:100dvh}.wb-brand{display:flex;gap:11px;align-items:center;color:inherit;text-decoration:none;font-size:17px;font-weight:650;line-height:1.35}.wb-brand-symbol{color:var(--wb-green);font-size:37px;font-weight:400}.wb-brand small{display:block;color:var(--wb-muted);font-size:10px;font-weight:400;margin-top:6px;letter-spacing:.1em}.wb-nav-caption{font-size:10px;color:#9ba49d;margin:45px 13px 12px;letter-spacing:.13em}.wb-sidebar nav{display:flex;flex-direction:column;gap:7px}.wb-sidebar button{border:0;color:#6d7770;background:transparent;text-align:left;display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:8px;width:100%}.wb-sidebar button[aria-current=page]{background:#e8eee4;color:#3b614a;font-weight:600}.wb-sidebar nav button span{font-size:12px;width:18px;text-align:center;font-weight:400;opacity:.8}.wb-sidebar button:hover{background:#edf0e9}.wb-sidebar-bottom{margin-top:auto;padding-top:30px}.wb-sidebar-bottom p{font-size:11px;margin:0 13px}.wb-sidebar-bottom>small{display:block;font-size:10px;color:#9aa39b;margin:1px 13px 18px}.wb-sidebar-bottom button{border-top:1px solid var(--wb-line);padding-top:18px;border-radius:0;font-size:12px}.wb-status-dot{display:inline-block;width:5px;height:5px;background:#719278;border-radius:50%;margin-right:7px}.wb-main{flex:1;min-width:0;display:flex;flex-direction:column}.wb-topbar{height:68px;border-bottom:1px solid var(--wb-line);display:flex;justify-content:space-between;align-items:center;padding:0 42px;font-size:11px;color:#929b94}.wb-device-badge{border:1px solid #dce4d9;border-radius:15px;padding:3px 11px;font-size:10px;color:#6e8571;background:#fafff6}.wb-content{width:100%;max-width:1200px;margin:0 auto;padding:52px 48px;flex:1}.wb-page-intro{margin-bottom:34px}.wb-eyebrow{font-size:10px;letter-spacing:.12em;color:#8d9b8d}.wb-shell h1{font-size:28px;line-height:1.4;letter-spacing:.02em;font-weight:600;margin:12px 0}.wb-shell h2{font-size:16px;font-weight:550;line-height:1.6;margin:0 0 9px}.wb-page-intro p,.wb-empty p{color:var(--wb-muted);font-size:12px;margin:0;line-height:1.9}.wb-today-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(230px,1fr);gap:24px}.wb-empty{background:var(--wb-paper);border:1px solid var(--wb-line);border-radius:13px;padding:40px 28px;text-align:center;overflow-wrap:anywhere}.wb-today-card{min-height:315px;display:flex;flex-direction:column;align-items:center;justify-content:center}.wb-paper-mark{font-size:30px;color:#abb8a7;margin-bottom:23px;background:#f4f6f0;width:58px;height:58px;border-radius:16px;line-height:58px}.wb-today-note{background:#eef1e7;border:1px solid #e3e8da;border-radius:13px;padding:30px 26px}.wb-today-note h2{margin-top:17px;color:#66735e;font-size:17px}.wb-today-note p{font-size:12px;color:#89917f;line-height:1.9}.wb-divider{height:1px;background:#dde3d4;margin:28px 0 18px}.wb-today-note small{font-size:10px;color:#7e8c76}.wb-hint{font-size:11px!important;color:#8d988f!important;line-height:1.8}.wb-footer{text-align:center;font-size:10px;letter-spacing:.08em;color:#a4ada2;padding:20px}.wb-settings-list{background:white;border:1px solid var(--wb-line);border-radius:13px;padding:0 25px}.wb-setting-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 0;border-bottom:1px solid var(--wb-line)}.wb-setting-row:last-child{border-bottom:0}.wb-setting-row h2{font-size:15px;margin:0}.wb-setting-row p{margin:3px 0;color:var(--wb-muted);font-size:11px}.wb-setting-row small{font-size:10px;color:var(--wb-muted)}.wb-toggle{width:39px;height:23px;border:0;border-radius:20px;padding:3px;background:#d5dcd4;flex-shrink:0}.wb-toggle span{width:17px;height:17px;display:block;border-radius:50%;background:white;box-shadow:0 1px 3px #0001;transition:transform .15s}.wb-toggle[aria-checked=true]{background:#769078}.wb-toggle[aria-checked=true] span{transform:translateX(16px)}.wb-toggle:disabled{opacity:.5}.wb-notice,.wb-capabilities p{font-size:12px;color:#8d7449;background:#f6f0df;border:1px solid #e8ddc5;border-radius:8px;padding:12px 16px}.wb-preview-list{display:grid;gap:12px}.wb-preview-item{background:#fff;border:1px solid var(--wb-line);border-radius:10px;padding:20px}.wb-preview-item summary{cursor:pointer;color:#49684f}.wb-preview-item pre{white-space:pre-wrap;word-break:break-word;font-size:11px;color:#778078;max-height:400px;overflow:auto}.wb-shell button:focus-visible,.wb-shell a:focus-visible{outline:2px solid #789c7b;outline-offset:3px}.wb-empty button{border:1px solid #ccd8c8;background:#edf3e8;color:#48664d;border-radius:7px;padding:8px 14px;margin-top:20px}
+@media(min-width:1500px){.wb-content{padding-top:68px}.wb-topbar{padding:0 48px}}
+@media(max-width:900px){.wb-sidebar{width:180px;padding:25px 13px}.wb-brand{font-size:15px}.wb-brand-symbol{font-size:30px}.wb-brand small{font-size:8px}.wb-content{padding:35px 28px}.wb-topbar{padding:0 28px}.wb-today-grid{grid-template-columns:1fr}.wb-today-note{padding:24px}.wb-today-note .wb-divider{margin:18px 0}.wb-shell h1{font-size:25px}}
+@media(max-width:600px){.wb-shell{display:block;padding-bottom:72px}.wb-sidebar{position:fixed;inset:auto 0 0;width:100%;height:67px;border-right:0;border-top:1px solid var(--wb-line);padding:5px 7px;background:#fbfcf8f5;backdrop-filter:blur(12px);z-index:20;flex-direction:row}.wb-brand,.wb-nav-caption,.wb-sidebar-bottom p,.wb-sidebar-bottom>small{display:none}.wb-sidebar nav{flex:1;display:flex;flex-direction:row;gap:0;overflow-x:auto;scrollbar-width:none}.wb-sidebar nav button{min-width:46px;justify-content:center;flex:1;flex-direction:column;gap:1px;padding:6px 3px;font-size:10px;border-radius:7px;line-height:1.6}.wb-sidebar nav button span{font-size:13px}.wb-sidebar-bottom{padding:0;margin:0;flex-shrink:0;width:49px}.wb-sidebar-bottom button{border:0;padding:6px 1px;font-size:15px;flex-direction:column;gap:0;height:100%;justify-content:center;border-radius:7px}.wb-sidebar-bottom button span{font-size:9px}.wb-topbar{height:53px;padding:0 20px;font-size:10px}.wb-content{padding:30px 20px}.wb-shell h1{font-size:24px}.wb-page-intro{margin-bottom:25px}.wb-page-intro p{font-size:11px}.wb-today-grid{gap:17px}.wb-today-card{min-height:274px}.wb-today-note h2{font-size:16px}.wb-footer{font-size:9px;padding:18px}.wb-settings-list{padding:0 17px}.wb-setting-row{padding:19px 0}.wb-preview-item{padding:16px}}
+html,body,#root{margin:0;min-height:100%;width:100%}body{background:#f6f6f2}
+/* Refactoring UI §2.1/§3.6/§5.6: records and actions lead, supporting copy recedes.
+   Reuse the existing sage/neutral palette; keep the legacy learning module's controls intact. */
+.wb-shell {
+  --wb-bg: #f6f6f2;
+  --wb-paper: #fff;
+  --wb-surface: var(--wb-paper);
+  --wb-soft: #fbfcf8;
+  --wb-ink: #2e3836;
+  --wb-secondary: #526750;
+  --wb-muted: #66735e;
+  --wb-line: #e4e8e1;
+  --wb-border: var(--wb-line);
+  --wb-green: #486c59;
+  --wb-green-dark: #3b614a;
+  --wb-green-soft: #e8eee4;
+  --wb-warning: #86672e;
+  --wb-warning-bg: #fff8e8;
+  --wb-danger: #a24e3e;
+  --wb-danger-bg: #fff1ed;
+  --wb-space-1: 4px;
+  --wb-space-2: 8px;
+  --wb-space-3: 12px;
+  --wb-space-4: 16px;
+  --wb-space-6: 24px;
+  --wb-space-8: 32px;
+  --wb-space-12: 48px;
+  --wb-text-xs: 12px;
+  --wb-text-sm: 14px;
+  --wb-text-base: 16px;
+  --wb-text-section: 20px;
+  --wb-text-title: 32px;
+  --wb-radius-sm: 8px;
+  --wb-radius: 12px;
+  --wb-radius-lg: 16px;
+  --wb-elevation-1: 0 1px 2px #0001;
+  --wb-elevation-2: 0 2px 4px #0001;
+  --wb-elevation-3: 0 4px 12px #0001;
+  --wb-elevation-4: 0 8px 24px #0001;
+  --wb-elevation-5: 0 16px 48px #0001;
+  font-size: var(--wb-text-sm);
+  letter-spacing: 0;
+}
+.wb-sidebar {width: 224px; padding: var(--wb-space-8) var(--wb-space-4); background: var(--wb-soft);}
+.wb-brand {padding: 0 var(--wb-space-2); font-weight: 600;}
+.wb-brand small {font-size: var(--wb-text-xs); letter-spacing: 0; color: var(--wb-muted);}
+.wb-nav-caption {font-size: var(--wb-text-xs); color: var(--wb-muted); margin: var(--wb-space-12) var(--wb-space-4) var(--wb-space-3); letter-spacing: 0;}
+.wb-sidebar nav {gap: var(--wb-space-2);}
+.wb-sidebar nav button {min-height: 44px; gap: var(--wb-space-3); padding: var(--wb-space-3) var(--wb-space-4); color: var(--wb-secondary); border-radius: var(--wb-radius); transition: background-color .15s, color .15s;}
+.wb-sidebar nav button span {font-size: var(--wb-text-base); color: var(--wb-muted); opacity: 1;}
+.wb-sidebar button[aria-current=page] {color: var(--wb-green-dark); background: var(--wb-green-soft); font-weight: 600; box-shadow: inset 3px 0 var(--wb-green);}
+.wb-sidebar nav button[aria-current=page] span {color: var(--wb-green);}
+.wb-sidebar-bottom p,.wb-sidebar-bottom>small,.wb-sidebar-bottom button {font-size: var(--wb-text-xs); color: var(--wb-muted);}
+.wb-status-dot {background: var(--wb-muted);}
+.wb-topbar {height: 56px; padding: 0 var(--wb-space-8); font-size: var(--wb-text-xs); color: var(--wb-muted); background: var(--wb-soft);}
+.wb-device-badge {min-height: 32px; padding: var(--wb-space-1) var(--wb-space-3); font-size: var(--wb-text-xs); color: var(--wb-green-dark); background: var(--wb-paper); border: 1px solid var(--wb-line); border-radius: var(--wb-radius);}
+.wb-device-badge:hover {background: var(--wb-green-soft);}
+.wb-content {max-width: 1240px; padding: var(--wb-space-8);}
+.wb-page-intro {margin-bottom: var(--wb-space-6);}
+.wb-eyebrow {font-size: var(--wb-text-xs); letter-spacing: .04em; color: var(--wb-muted);}
+.wb-shell h1 {font-size: var(--wb-text-title); line-height: 1.25; font-weight: 600; letter-spacing: -.02em; margin: var(--wb-space-2) 0 var(--wb-space-3);}
+.wb-shell h2 {font-size: var(--wb-text-base); font-weight: 600; line-height: 1.5;}
+.wb-page-intro p,.wb-empty p {font-size: var(--wb-text-sm); line-height: 1.7; color: var(--wb-muted); max-width: 35em;}
+.wb-today-grid {gap: var(--wb-space-6); grid-template-columns: minmax(0,1.65fr) minmax(240px,1fr); align-items: start;}
+.wb-today-note {padding: var(--wb-space-6); border: 0; border-radius: var(--wb-radius-lg); background: var(--wb-green-soft);}
+.wb-today-note h2 {font-size: var(--wb-text-base); color: var(--wb-green-dark); margin: var(--wb-space-3) 0;}
+.wb-today-note p,.wb-today-note small {font-size: var(--wb-text-xs); color: var(--wb-secondary); line-height: 1.7;}
+.wb-shell .wb-hint {font-size: var(--wb-text-xs)!important; color: var(--wb-muted)!important; line-height: 1.7;}
+.wb-footer {font-size: var(--wb-text-xs); color: var(--wb-muted); padding: var(--wb-space-6); letter-spacing: 0;}
+.wb-settings-list {border-radius: var(--wb-radius-lg); padding: 0 var(--wb-space-6);}
+.wb-setting-row {padding: var(--wb-space-6) 0;}
+.wb-setting-row h2 {font-size: var(--wb-text-base);}
+.wb-setting-row p,.wb-setting-row small {font-size: var(--wb-text-xs); color: var(--wb-muted);}
+.wb-toggle[aria-checked=true] {background: var(--wb-green);}
+.wb-notice,.wb-capabilities p {font-size: var(--wb-text-sm); color: var(--wb-warning); background: var(--wb-warning-bg); border-radius: var(--wb-radius); line-height: 1.7;}
+.wb-shell button:focus-visible,.wb-shell a:focus-visible {outline: 2px solid var(--wb-green); outline-offset: 3px;}
+@media(min-width:1500px) {.wb-content {padding-top: var(--wb-space-12);}.wb-topbar {padding: 0 var(--wb-space-8);}}
+@media(max-width:900px) {.wb-sidebar {width: 180px; padding: var(--wb-space-6) var(--wb-space-3);}.wb-content {padding: var(--wb-space-6);}.wb-topbar {padding: 0 var(--wb-space-6);}.wb-today-grid {grid-template-columns: 1fr;}}
+@media(max-width:600px) {
+  .wb-shell {padding-bottom: calc(76px + env(safe-area-inset-bottom,0px));}
+  .wb-sidebar {width: 100%; height: calc(68px + env(safe-area-inset-bottom,0px)); padding: var(--wb-space-1) var(--wb-space-1) calc(var(--wb-space-1) + env(safe-area-inset-bottom,0px)); background: var(--wb-paper); box-shadow: 0 -1px 0 var(--wb-line);}
+  .wb-sidebar nav {gap: 0;}
+  .wb-sidebar nav button {min-width: 44px; min-height: 56px; padding: var(--wb-space-1); gap: var(--wb-space-1); font-size: var(--wb-text-xs); border-radius: var(--wb-radius-sm);}
+  .wb-sidebar nav button span {font-size: var(--wb-text-base);}
+  .wb-sidebar button[aria-current=page] {box-shadow: inset 0 2px var(--wb-green);}
+  .wb-sidebar-bottom {width: 52px;}
+  .wb-sidebar-bottom button {font-size: var(--wb-text-base); padding: var(--wb-space-1); min-height: 56px;}
+  .wb-sidebar-bottom button span {font-size: 10px;}
+  .wb-topbar {height: 56px; padding: 0 var(--wb-space-4);}
+  .wb-device-badge {min-height: 40px;}
+  .wb-content {padding: var(--wb-space-6) var(--wb-space-4);}
+  .wb-shell h1 {font-size: 28px;}
+  .wb-page-intro {margin-bottom: var(--wb-space-6);}
+  .wb-page-intro p {font-size: var(--wb-text-sm);}
+  .wb-today-grid {gap: var(--wb-space-4);}
+  .wb-footer {font-size: var(--wb-text-xs); padding: var(--wb-space-4);}
+}
+@media(prefers-reduced-motion:reduce) {.wb-sidebar nav button,.wb-toggle span {transition: none;}}
+.wb-today-note .wb-eyebrow {color: var(--wb-secondary);}
+
+.wb-nav-icon {width: 20px; height: 20px; flex-shrink: 0; color: var(--wb-muted);}
+.wb-sidebar button[aria-current=page] .wb-nav-icon {color: var(--wb-green);}

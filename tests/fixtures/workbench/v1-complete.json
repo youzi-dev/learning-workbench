@@ -1,0 +1,371 @@
+{
+  "format": "growth-workbench",
+  "schemaVersion": 1,
+  "appVersion": "0.11.0",
+  "exportedAt": "2026-10-23T10:00:00.000Z",
+  "state": {
+    "lab": {
+      "sessions": {
+        "removed-unit:practice": {
+          "unitId": "removed-unit",
+          "mode": "practice",
+          "learnedAt": "2026-10-23T10:00:00.000Z",
+          "code": "return 42",
+          "hintsSeen": 1,
+          "helpLevel": "hinted"
+        }
+      },
+      "attempts": [
+        {
+          "code": "return 42",
+          "taskId": "removed-task",
+          "checks": [
+            {
+              "label": "raw check",
+              "passed": false,
+              "expected": 42,
+              "actual": 3,
+              "input": [
+                1
+              ],
+              "error": "wrong"
+            }
+          ],
+          "logs": [
+            "raw log"
+          ],
+          "error": "",
+          "id": "attempt-old",
+          "unitId": "removed-unit",
+          "mode": "practice",
+          "helpLevel": "hinted",
+          "explanation": "raw explanation",
+          "passed": false,
+          "createdAt": "2026-10-23T10:00:00.000Z"
+        }
+      ]
+    },
+    "reading": {
+      "url": "https://www.runoob.com/python3/python3-loop.html",
+      "title": "reading location"
+    },
+    "onboarding": {
+      "introSeen": true,
+      "demoCompleted": false
+    },
+    "columns": [
+      {
+        "id": "column-old",
+        "title": "old title",
+        "goal": "original goal",
+        "createdAt": "2026-10-23T10:00:00.000Z",
+        "kind": "knowledge",
+        "phase": "remediate",
+        "currentStepIndex": 0,
+        "taughtStepIds": [
+          "removed-unit"
+        ],
+        "messages": [
+          {
+            "id": "message-old",
+            "role": "user",
+            "content": "const apiKey = \"learner example\";\n原始解释",
+            "createdAt": "2026-10-23T10:00:00.000Z",
+            "origin": "user",
+            "model": "m",
+            "apiProfile": "profile"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "evidence-old",
+            "stepId": "removed-unit",
+            "answer": "raw answer",
+            "teachback": "raw teachback",
+            "helpLevel": "hinted",
+            "level": "初步理解",
+            "confirmed": true,
+            "suggestion": {
+              "level": "初步理解",
+              "reason": "raw reason"
+            },
+            "gap": "raw gap",
+            "gapAddressed": false,
+            "createdAt": "2026-10-23T10:00:00.000Z"
+          }
+        ],
+        "overview": "raw overview",
+        "plan": {
+          "target": "raw target",
+          "confirmedAt": "2026-10-23T10:00:00.000Z",
+          "steps": [
+            {
+              "id": "removed-unit",
+              "title": "gone unit",
+              "outcome": "historical",
+              "priority": 1,
+              "status": "学习中"
+            }
+          ]
+        },
+        "pendingAnswer": {
+          "text": "raw pending",
+          "createdAt": "2026-10-23T10:00:00.000Z",
+          "helpLevel": "hinted"
+        },
+        "source": {
+          "course": {
+            "id": "gone-course",
+            "title": "historical course",
+            "description": "archived course",
+            "url": "https://www.runoob.com/python3/"
+          },
+          "url": "https://www.runoob.com/python3/",
+          "version": "2025.1",
+          "sectionIds": [
+            "removed-unit"
+          ]
+        }
+      }
+    ],
+    "sideChats": [
+      {
+        "id": "side-old",
+        "columnId": "column-old",
+        "parentMessageId": "message-old",
+        "createdAt": "2026-10-23T10:00:00.000Z",
+        "messages": [
+          {
+            "id": "side-message",
+            "role": "user",
+            "content": "const apiKey = \"learner example\";\n原始解释",
+            "createdAt": "2026-10-23T10:00:00.000Z",
+            "origin": "user",
+            "model": "m",
+            "apiProfile": "profile"
+          }
+        ],
+        "context": {
+          "quote": "raw quote",
+          "sourceMessage": "raw source",
+          "goal": "raw side goal"
+        },
+        "source": {
+          "url": "https://example.com",
+          "title": "reference"
+        }
+      },
+      {
+        "id": "orphan-side",
+        "columnId": "deleted-column",
+        "parentMessageId": "message-old",
+        "createdAt": "2026-10-23T10:00:00.000Z",
+        "messages": [
+          {
+            "id": "side-message",
+            "role": "user",
+            "content": "const apiKey = \"learner example\";\n原始解释",
+            "createdAt": "2026-10-23T10:00:00.000Z",
+            "origin": "user",
+            "model": "m",
+            "apiProfile": "profile"
+          }
+        ],
+        "context": {
+          "quote": "raw quote",
+          "sourceMessage": "raw source",
+          "goal": "raw side goal"
+        },
+        "source": {
+          "url": "https://example.com",
+          "title": "reference"
+        }
+      }
+    ],
+    "activeColumnId": "column-old",
+    "checkins": [
+      {
+        "date": "2026-10-23",
+        "columnId": "column-old",
+        "note": "raw note"
+      },
+      {
+        "date": "2026-10-22",
+        "columnId": "deleted-column",
+        "note": "orphan note"
+      }
+    ],
+    "practice": [
+      {
+        "id": "practice-old",
+        "columnId": "column-old",
+        "stepId": "removed-unit",
+        "kind": "code",
+        "file": "answer.ts",
+        "content": "return 42",
+        "helpLevel": "independent",
+        "createdAt": "2026-10-23T10:00:00.000Z"
+      }
+    ],
+    "usageRecords": [
+      {
+        "id": "usage-old",
+        "createdAt": "2026-10-23T10:00:00.000Z",
+        "profileId": "profile",
+        "model": "m",
+        "purpose": "chat",
+        "usage": {
+          "inputTokens": 23,
+          "cachedInputTokens": 0,
+          "uncachedInputTokens": 23,
+          "cacheWriteTokens": null,
+          "outputTokens": 8
+        }
+      }
+    ],
+    "contexts": {
+      "column-old": {
+        "checkpoint": {
+          "summary": "辅助摘要",
+          "throughId": "message-old",
+          "createdAt": "2026-10-23T10:00:00.000Z"
+        },
+        "lastInput": {
+          "profileId": "profile",
+          "model": "m",
+          "inputTokens": 23,
+          "throughId": "message-old",
+          "compactionBlocked": false
+        }
+      },
+      "side-old": {
+        "checkpoint": {
+          "summary": "辅助摘要",
+          "throughId": "message-old",
+          "createdAt": "2026-10-23T10:00:00.000Z"
+        },
+        "lastInput": {
+          "profileId": "profile",
+          "model": "m",
+          "inputTokens": 23,
+          "throughId": "message-old",
+          "compactionBlocked": false
+        }
+      },
+      "orphan": {
+        "checkpoint": {
+          "summary": "辅助摘要",
+          "throughId": "message-old",
+          "createdAt": "2026-10-23T10:00:00.000Z"
+        },
+        "lastInput": {
+          "profileId": "profile",
+          "model": "m",
+          "inputTokens": 23,
+          "throughId": "message-old",
+          "compactionBlocked": false
+        }
+      }
+    },
+    "settings": {
+      "provider": "custom",
+      "baseUrl": "https://api.example.com/v1",
+      "model": "m",
+      "customProtocol": "chat",
+      "reminderTime": "20:00",
+      "reminderDate": "2026-10-23",
+      "reminderEnabled": true,
+      "voice": {
+        "autoRead": true,
+        "rate": 1,
+        "voice": "local voice"
+      },
+      "preferences": {
+        "name": "learner",
+        "goal": "build",
+        "customInstructions": "gentle",
+        "dailyMinutes": 120,
+        "theme": "system",
+        "fontSize": 14,
+        "codeSize": 14,
+        "sendKey": "enter",
+        "closeToTray": true,
+        "defaultMode": "coach",
+        "wordWrap": true,
+        "lineNumbers": true,
+        "minimap": false,
+        "tabSize": 2,
+        "replyStyle": "balanced"
+      },
+      "modelLibrary": {
+        "profiles": [
+          {
+            "id": "profile",
+            "name": "private",
+            "baseUrl": "https://api.example.com/v1",
+            "protocol": "chat",
+            "models": [
+              "m"
+            ],
+            "contextWindows": {
+              "m": 32000
+            },
+            "apiKey": "DO-NOT-SYNC-profile"
+          }
+        ],
+        "active": {
+          "profileId": "profile",
+          "model": "m"
+        }
+      },
+      "apiKey": "DO-NOT-SYNC-settings"
+    }
+  },
+  "browser": {
+    "drafts": {
+      "lab": {
+        "removed-unit:practice": {
+          "explanation": "unfinished explanation",
+          "lastRun": {
+            "code": "return 42",
+            "taskId": "removed-task",
+            "checks": [
+              {
+                "label": "raw check",
+                "passed": false,
+                "expected": 42,
+                "actual": 3,
+                "input": [
+                  1
+                ],
+                "error": "wrong"
+              }
+            ],
+            "logs": [
+              "raw log"
+            ],
+            "error": ""
+          },
+          "updatedAt": "2026-10-23T10:00:00.000Z"
+        }
+      },
+      "messages": {
+        "column-old": "unfinished main",
+        "side-old": "unfinished side",
+        "orphan": "orphan draft"
+      },
+      "references": {
+        "column-old": {
+          "url": "https://example.com/ref",
+          "text": "provided reference",
+          "providedAt": "2026-10-23T10:00:00.000Z"
+        },
+        "orphan": {
+          "url": "https://example.com/orphan",
+          "text": "orphan reference",
+          "providedAt": "2026-10-23T10:00:00.000Z"
+        }
+      }
+    }
+  }
+}

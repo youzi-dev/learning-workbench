@@ -1,0 +1,187 @@
+name: ${WORKBENCH_COMPOSE_PROJECT:-personal-workbench}
+x-config: &config
+  WORKBENCH_DOMAIN: ${WORKBENCH_DOMAIN:?Set the public DNS domain}
+  WORKBENCH_PLATFORM: ${WORKBENCH_PLATFORM:?Set linux/arm64 or linux/amd64}
+  WORKBENCH_WORKER_IMAGE: ${WORKBENCH_WORKER_IMAGE:?Set the exact worker image digest}
+  WORKBENCH_DEPLOYMENT_ID: ${WORKBENCH_DEPLOYMENT_ID:?Set a unique stable deployment ID}
+  DOCKER_SOCKET_GID: ${DOCKER_SOCKET_GID:?Set the host Docker socket numeric group}
+  WORKBENCH_ALLOWED_ORIGINS: ${WORKBENCH_ALLOWED_ORIGINS:-https://localhost}
+x-api-image: &api-image
+  image: workbench-api:${WORKBENCH_IMAGE_TAG:-local}
+  platform: ${WORKBENCH_PLATFORM:?Set explicit platform}
+  build:
+    context: ..
+    dockerfile: deploy/server.Dockerfile
+    target: api
+x-hardened: &hardened
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  init: true
+  pids_limit: 128
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: '3'}
+services:
+  init:
+    <<: [*api-image, *hardened]
+    user: '0:0'
+    cap_add: [CHOWN, FOWNER, DAC_OVERRIDE]
+    command: [init]
+    network_mode: none
+    environment: *config
+    restart: 'no'
+    mem_limit: 128m
+    volumes:
+      - data:/init/data
+      - keys:/init/keys
+      - control:/init/control
+      - backups:/init/backups
+      - recovery:/init/recovery
+      - caddy-data:/init/caddy-data
+      - caddy-config:/init/caddy-config
+  broker:
+    <<: *hardened
+    image: workbench-broker:${WORKBENCH_IMAGE_TAG:-local}
+    platform: ${WORKBENCH_PLATFORM:?Set explicit platform}
+    build: {context: .., dockerfile: deploy/server.Dockerfile, target: broker}
+    user: '12000:12001'
+    group_add: ['${DOCKER_SOCKET_GID:?Set socket group}']
+    network_mode: none
+    environment: *config
+    command: [broker]
+    restart: unless-stopped
+    stop_grace_period: 70s
+    mem_limit: 2816m
+    cpus: 1.0
+    tmpfs: ['/tmp:rw,noexec,nosuid,nodev,size=2415919104,uid=12000,gid=12001,mode=0700']
+    volumes:
+      - control:/control
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        bind: {create_host_path: false}
+    depends_on: {init: {condition: service_completed_successfully}}
+    healthcheck:
+      test: [CMD, node, /opt/workbench/deploy.mjs, health-broker]
+      interval: 20s
+      timeout: 4s
+      retries: 3
+      start_period: 90s
+  api:
+    <<: [*api-image, *hardened]
+    user: '11000:11000'
+    group_add: ['12001']
+    environment: *config
+    command: [api]
+    restart: unless-stopped
+    stop_grace_period: 70s
+    mem_limit: 3584m
+    cpus: 1.5
+    tmpfs: ['/tmp:rw,noexec,nosuid,nodev,size=2415919104,uid=11000,gid=11000,mode=0700']
+    volumes: [data:/data, keys:/keys:ro, control:/control:ro]
+    networks: [api]
+    depends_on: {init: {condition: service_completed_successfully}, broker: {condition: service_healthy}}
+    healthcheck:
+      test: [CMD, node, /opt/workbench/deploy.mjs, health-api]
+      interval: 20s
+      timeout: 4s
+      retries: 3
+      start_period: 30s
+  scheduler:
+    <<: [*api-image, *hardened]
+    user: '11000:11000'
+    network_mode: none
+    environment: *config
+    command: [scheduler]
+    restart: unless-stopped
+    stop_grace_period: 10m
+    mem_limit: 1024m
+    cpus: 0.5
+    tmpfs: ['/tmp:rw,noexec,nosuid,nodev,size=16777216,uid=11000,gid=11000,mode=0700']
+    volumes: [data:/data:ro, backups:/backups]
+    depends_on: {init: {condition: service_completed_successfully}, api: {condition: service_healthy}}
+    healthcheck:
+      test: [CMD, node, /opt/workbench/deploy.mjs, health-scheduler]
+      interval: 60s
+      timeout: 5s
+      retries: 2
+      start_period: 2m
+  web:
+    <<: *hardened
+    image: workbench-web:${WORKBENCH_IMAGE_TAG:-local}
+    platform: ${WORKBENCH_PLATFORM:?Set explicit platform}
+    build: {context: .., dockerfile: deploy/server.Dockerfile, target: web}
+    user: '13000:13000'
+    cap_add: [NET_BIND_SERVICE]
+    environment: {WORKBENCH_DOMAIN: '${WORKBENCH_DOMAIN:?Set public domain}'}
+    command: [caddy, run, --config, /etc/caddy/Caddyfile, --adapter, caddyfile]
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.5
+    tmpfs: ['/tmp:rw,noexec,nosuid,nodev,size=16777216,uid=13000,gid=13000,mode=0700']
+    ports: ['80:80', '443:443', '443:443/udp']
+    volumes: [caddy-data:/data, caddy-config:/config]
+    networks: [api, public]
+    depends_on: {init: {condition: service_completed_successfully}, api: {condition: service_healthy}}
+  replicator:
+    <<: *hardened
+    profiles: [offhost]
+    image: workbench-replicator:${WORKBENCH_IMAGE_TAG:-local}
+    platform: ${WORKBENCH_PLATFORM:?Set explicit platform}
+    build: {context: .., dockerfile: deploy/server.Dockerfile, target: replicator}
+    user: '11000:11000'
+    environment: {WORKBENCH_DEPLOYMENT_ID: '${WORKBENCH_DEPLOYMENT_ID:?Set stable deployment ID}'}
+    entrypoint: [node, /opt/workbench/offhost.mjs]
+    command: [serve]
+    restart: unless-stopped
+    stop_grace_period: 15s
+    mem_limit: 1024m
+    cpus: 0.5
+    tmpfs: ['/tmp:rw,noexec,nosuid,nodev,size=67108864,uid=11000,gid=11000,mode=0700']
+    volumes:
+      - backups:/backups
+      - type: bind
+        source: ${WORKBENCH_OFFHOST_DIRECTORY:-./offhost-private}
+        target: /operator
+        read_only: true
+        bind: {create_host_path: false}
+    networks: [public]
+    depends_on: {init: {condition: service_completed_successfully}}
+    healthcheck:
+      test: [CMD, node, /opt/workbench/offhost.mjs, health]
+      interval: 60s
+      timeout: 5s
+      retries: 2
+      start_period: 2m
+  backup:
+    <<: [*api-image, *hardened]
+    profiles: [tools]
+    user: '11000:11000'
+    network_mode: none
+    environment: *config
+    entrypoint: [node, /opt/workbench/deploy.mjs, backup]
+    command: []
+    mem_limit: 1024m
+    volumes: [data:/data:ro, backups:/backups]
+  restore:
+    <<: [*api-image, *hardened]
+    profiles: [tools]
+    user: '11000:11000'
+    network_mode: none
+    environment: *config
+    entrypoint: [node, /opt/workbench/deploy.mjs, restore]
+    command: []
+    mem_limit: 1024m
+    volumes: [backups:/backups, recovery:/recovery]
+networks:
+  api: {internal: true}
+  public: {}
+volumes:
+  data: {}
+  keys: {}
+  control: {}
+  backups: {}
+  recovery: {}
+  caddy-data: {}
+  caddy-config: {}

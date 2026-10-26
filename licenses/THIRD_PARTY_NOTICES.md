@@ -31,6 +31,12 @@ These notices cover the production dependency graph in the current lockfile, inc
 | `dom-serializer@2.0.0` | MIT | [dom-serializer-2.0.0-LICENSE](dom-serializer-2.0.0-LICENSE) |
 | `entities@4.5.0` | BSD-2-Clause | [entities-4.5.0-LICENSE](entities-4.5.0-LICENSE) |
 | `boolbase@1.0.0` | ISC | [boolbase-1.0.0-LICENSE](boolbase-1.0.0-LICENSE) |
+| `@noble/hashes@2.4.0` | MIT | [noble-hashes-2.4.0-LICENSE](noble-hashes-2.4.0-LICENSE) |
+| `pdfjs-dist@6.4.299` | Apache-2.0 | [pdfjs-dist-6.4.299-LICENSE](pdfjs-dist-6.4.299-LICENSE) |
+| `@capacitor/core@8.5.3` | MIT | [Capacitor-core-8.5.3-LICENSE.txt](Capacitor-core-8.5.3-LICENSE.txt) |
+| `@capacitor/android@8.5.3` | MIT | [Capacitor-android-8.5.3-LICENSE.txt](Capacitor-android-8.5.3-LICENSE.txt) |
+
+PDF.js is by the Mozilla Foundation (2024 attribution retained in its bundled library and worker). Capacitor is by Ionic; its original MIT texts are retained.
 
 QuickJS/WASM license files include the underlying QuickJS copyright and MIT permission. Monaco includes its own notices; DOMPurify offers Apache-2.0 or MPL-2.0 and both texts are retained. Codicons icons use CC-BY-4.0; their code uses MIT. Attribution: Microsoft, [vscode-codicons](https://github.com/microsoft/vscode-codicons). The icons are used in the application interface.
 
@@ -38,7 +44,7 @@ QuickJS/WASM license files include the underlying QuickJS copyright and MIT perm
 
 Electron is MIT licensed; its text is [licenses/electron-LICENSE.txt](electron-LICENSE.txt). Electron's distributed runtime also contains Chromium and other components. Keep the unmodified Electron distribution's LICENSE.electron.txt and LICENSES.chromium.html in every desktop artifact. Those distribution files contain the runtime-specific complete notices and cannot be replaced with this application license. The CI package check requires both files.
 
-## Offline speech recognition
+## Offline speech recognition (desktop only)
 
 SenseVoice Small is by FunAudioLLM / FunASR, Alibaba Group. Original model: [FunAudioLLM/SenseVoiceSmall](https://huggingface.co/FunAudioLLM/SenseVoiceSmall). The unchanged INT8 ONNX conversion is distributed by [sherpa-onnx](https://k2-fsa.github.io/sherpa/onnx/sense-voice/pretrained.html), model release `sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17`. We preserve the model name, source and attribution. Weights follow the [FunASR Model Open Source License Agreement v1.1](SenseVoice-MODEL-LICENSE.txt), including attribution and its other conditions.
 
@@ -63,6 +69,10 @@ The [v1.13.8 build definitions](https://github.com/k2-fsa/sherpa-onnx/tree/v1.13
 This list is based on the pinned upstream build and supplied notices. A changed runtime, feature flag or rebuilt engine needs another dependency/license check. A successful build does not establish legal permission for unrelated cached tutorial content or user materials.
 
 macOS speech synthesis uses the operating system's say program; no TTS voices or weights are redistributed. Windows speech synthesis is currently unavailable and does not bundle a voice engine. System libraries remain supplied by the target OS.
+
+## Android native runtime
+
+See [android-native/NOTICE.md](android-native/NOTICE.md) for exact runtime coordinates, resolution metadata, full Apache-2.0 terms, and Cordova NOTICE. SQLCipher/LibTomCrypt/SQLite native license and source records remain in Android assets.
 
 ## External learning sources and private data
 

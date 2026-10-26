@@ -3,6 +3,8 @@ import {flushSync} from 'react-dom';
 import type {BrowserController} from './controller';
 import {BrowserOnboarding} from './onboarding';
 import {BrowserDataPanel} from './data-panel';
+import {LearningPendingPanel} from '../modules/learning/pending-panel';
+import type {LearningRecoveryStore} from '../modules/learning/pending-recovery';
 import {BrowserSources} from './sources';
 import {registerBrowserPwa, type PwaController, type PwaStatus} from './pwa';
 import {LabPanel} from '../renderer/lab-panel';
@@ -21,7 +23,6 @@ import type {LabRun} from '../core/lab';
 import {BrowserReadingProvider, BrowserReadingControls, useBrowserReading} from './read-aloud';
 import {createBrowserVoiceCoordinator} from './voice/coordinator';
 import {BrowserVoiceResources} from './voice/input';
-import './app.css';
 
 declare const __WB_BROWSER_ASR_ENABLED__: boolean;
 declare const __WB_BROWSER_BUILD_ID__: string;
@@ -31,7 +32,8 @@ const pages: Array<[Page, string, string]> = [['learn', '学习', 'book'], ['rec
 const storageLabels = {saved: '已保存到当前浏览器', saving: '正在保存…', unsaved: '尚未保存，内容仍保留在此页面', conflict: '另一页面已更新，待存内容保留在此页面', unavailable: '浏览器存储暂不可用，内容仍保留在此页面'};
 const message = (cause: unknown) => cause instanceof Error ? cause.message : String(cause);
 
-export function BrowserApp({controller}: {controller: BrowserController}) {
+function historicalUnitTitle(id: string): string {try {return practiceUnit(id).title;} catch {return `历史单元 · ${id}`;}}
+export function BrowserApp({controller, embedded = false, packagedNative = false, onOpenBackup, pendingRecovery, registerLeaveGuard}: {controller: BrowserController; embedded?: boolean; packagedNative?: boolean; onOpenBackup?: () => void; pendingRecovery?: LearningRecoveryStore; registerLeaveGuard?: (guard:()=>Promise<void>)=>()=>void}) {
   const [, render] = useState(0);
   const [page, setPage] = useState<Page>('learn');
   const [generation, setGeneration] = useState(0);
@@ -83,6 +85,7 @@ export function BrowserApp({controller}: {controller: BrowserController}) {
     return messages.some(item => item.id === request.itemId && item.content === request.text);
   },()=>voice.beforeRead());
   readingRef.current=reading;
+  useEffect(()=>registerLeaveGuard?.(async()=>{if(hasUiDraft())throw Error('学习页面还有未保存的表单，请先保存或取消后离开。');if(voice.busy()||controller.isBusy())throw Error('请先等待或取消学习操作，再离开。');try{await controller.flush();}catch{throw Error('学习输入尚未保存。请在学习设置中下载待存副本，或保留副本后读取最新，再离开。');}}),[controller,voice,registerLeaveGuard]);
   useEffect(()=>voice.subscribe(()=>render(value=>value+1)),[voice]);
   useEffect(()=>()=>voice.dispose(),[voice]);
   useEffect(() => () => models.dispose(), [models]);
@@ -99,6 +102,7 @@ export function BrowserApp({controller}: {controller: BrowserController}) {
     return () => {window.removeEventListener('beforeunload', beforeUnload); running.current?.abort();};
   }, [controller]);
   useEffect(() => {
+    if (packagedNative) {setPwaStatus({phase: 'not-ready', install: 'unsupported', message: '当前使用 Android 安装包，内置页面随应用更新。'}); return;}
     let active = true; let unsubscribe: (() => void) | undefined;
     registerBrowserPwa(import.meta.env.BASE_URL, {
       flush: async () => {if (hasUiDraft()) throw Error('还有未保存的参考片段或导入预览。'); await controller.flush();},
@@ -115,7 +119,7 @@ export function BrowserApp({controller}: {controller: BrowserController}) {
       }
     }).then(value => {if (!active) {value.dispose(); return;} pwa.current = value; setPwaStatus(value.status()); unsubscribe = value.subscribe(() => setPwaStatus(value.status()));}).catch(cause => {if (active) setError(message(cause));});
     return () => {active = false; unsubscribe?.(); pwa.current?.dispose(); pwa.current = null;};
-  }, [controller]);
+  }, [controller, packagedNative]);
   function markDirty(scope: string, value: boolean) {if(updateHeldRef.current)return;dirty.current[scope] = value; render(previous => previous + 1);}
   function navigate(next: Page) {if(updateHeldRef.current||restoreHeldRef.current)return;voice.scope();reading.stop('scope');route.current.page=next;running.current?.abort(); setPage(next);}
   function switchLearning(next: 'lab'|'teaching') {if(updateHeldRef.current||restoreHeldRef.current)return;voice.scope();reading.stop('scope');route.current.learningView=next;setLearningView(next);}
@@ -189,7 +193,7 @@ export function BrowserApp({controller}: {controller: BrowserController}) {
   const theme = document.state.settings.preferences.theme;
   const showIntro = !document.state.onboarding.introSeen && page !== 'settings';
   return <BrowserReadingProvider value={reading}><div className="browser-app" data-theme={theme}>
-    <header className="browser-top"><strong><Icon name="book"/>学习工作台</strong><span>手机 / 浏览器版</span></header>
+    <header className="browser-top" hidden={embedded}><strong><Icon name="book"/>学习工作台</strong><span>手机 / 浏览器版</span></header>
     <p className={`browser-save-state ${controller.storageStatus()}`} role="status">{updateHeld ? '正在安全更新，编辑暂时暂停。' : hasUiDraft() ? '有尚未保存的参考片段或导入预览' : storageLabels[controller.storageStatus()]}</p>
     {error && <p role="alert" className="browser-error browser-global-error">{error}</p>}
     <BrowserReadingControls suspended={updateHeld || restoreHeld}/>
@@ -205,7 +209,7 @@ export function BrowserApp({controller}: {controller: BrowserController}) {
           {document.state.columns.map(column=><div key={`teaching:${modelGeneration}:${column.id}`} hidden={document.state.activeColumnId!==column.id} data-teaching-column={column.id}><MobileTeaching columnId={column.id} controller={controller} models={models} voice={voice.enabled?voice:undefined} suspended={updateHeld||restoreHeld} readingVisible={page==='learn'&&!showIntro&&learningView==='teaching'&&document.state.activeColumnId===column.id} onReadingScopeChange={()=>reading.stop('scope')} onDirty={value=>markDirty(`teaching:${column.id}`,value)}/></div>)}
         </div>
         <section hidden={page !== 'records' || showIntro} className="browser-page" aria-label="学习记录"><h1>学习记录</h1><p>看自己的代码、解释和实际结果。打卡与阅读次数不表示掌握。</p>
-          {document.state.lab.attempts.map(attempt => <details className="browser-card" key={attempt.id}><summary>{practiceUnit(attempt.unitId).title} · {attempt.passed ? '当前用例通过' : '本次未通过'}</summary><p>{new Date(attempt.createdAt).toLocaleString('zh-CN')} · {({independent: '独立尝试', hinted: '看过提示', explained: '看过讲解'})[attempt.helpLevel]}</p><pre><code>{attempt.code}</code></pre><p className="browser-reference">{attempt.explanation}</p></details>)}
+          {document.state.lab.attempts.map(attempt => <details className="browser-card" key={attempt.id}><summary>{historicalUnitTitle(attempt.unitId)} · {attempt.passed ? '当前用例通过' : '本次未通过'}</summary><p>{new Date(attempt.createdAt).toLocaleString('zh-CN')} · {({independent: '独立尝试', hinted: '看过提示', explained: '看过讲解'})[attempt.helpLevel]}</p><pre><code>{attempt.code}</code></pre><p className="browser-reference">{attempt.explanation}</p></details>)}
           {!document.state.lab.attempts.length && <p className="browser-muted">还没有保存实践产出。先读一个例子，再完成一次自己的尝试。</p>}
           {!!document.state.columns.length && <h2>导入的学习栏目</h2>}{document.state.columns.map(column => <details className="browser-card" key={column.id}><summary>{column.title}</summary><p>{column.goal}</p>{column.messages.map(item => <div className="browser-record-message" key={item.id}><strong>{item.origin==='assistant'&&item.role==='user'?'AI 来源材料':item.role === 'user' ? '用户原文（不自动算证据）' : 'AI 内容'}</strong><p className="browser-reference">{item.content}</p></div>)}{!!column.evidence.length && <div>{column.evidence.map(e=><details key={e.id}><summary>{e.level} · {e.helpLevel} · {e.confirmed?'已确认':'未确认'}</summary><pre>{e.answer}</pre><pre>{e.teachback}</pre><p>{e.gap}</p></details>)}</div>}</details>)}
           {document.state.sideChats.map(side=><details className="browser-card" key={side.id}><summary>侧聊 · {side.context.quote}</summary><p>原栏目 {side.columnId} · {side.context.goal}</p><pre>{side.context.sourceMessage}</pre>{side.messages.map(item=><div key={item.id}><strong>{item.role==='assistant'?'AI 内容':'用户提问'}</strong><pre>{item.content}</pre></div>)}</details>)}
@@ -216,7 +220,8 @@ export function BrowserApp({controller}: {controller: BrowserController}) {
           <section className="browser-card"><h2>外观</h2><div className="browser-actions">{(['system', 'light', 'dark'] as const).map(value => <button key={value} aria-pressed={theme === value} onClick={() => void controller.change(latest => ({...latest, state: {...latest.state, settings: {...latest.state.settings, preferences: {...latest.state.settings.preferences, theme: value}}}})).catch(cause => setError(message(cause)))}>{({system: '跟随系统', light: '浅色', dark: '深色'})[value]}</button>)}</div><button onClick={() => {navigate('learn'); void controller.change(latest => ({...latest, state: {...latest.state, onboarding: {...latest.state.onboarding, introSeen: false}}})).catch(cause => setError(message(cause)));}}>查看简短介绍</button></section>
           <section className="browser-card"><ModelSettings key={`models:${modelGeneration}`} library={library} keyStatus={keyStatus} busy={updateHeld} httpsOnly sessionNote="配置保存在当前浏览器；API Key 仅在本次网页会话使用，刷新、关闭或恢复备份后需要重新填写，不进入备份。没有 Key 也能继续本地学习。" emptyNote="模型帮助可选。填写自己的 HTTPS 接口、Key 和实际模型后，可以显式测试或提问。" onDirty={value=>markDirty('model-form',value)} onSave={saveProfile} onSelect={chooseModel} onRemove={deleteProfile} onTest={testModel}/></section>
           {voice.enabled&&<BrowserVoiceResources voice={voice}/>}
-          <BrowserDataPanel controller={controller} onBeforeReplace={holdRestoreReading} onRestored={remountLearning} onRetrySaved={remountLab} onDirty={value => markDirty('import', value)} hasUnsavedReference={() => Object.entries(dirty.current).some(([scope,value])=>scope!=='import'&&value)}/>
+          {embedded && pendingRecovery && <LearningPendingPanel controller={controller} recovery={pendingRecovery} onRestored={remountLearning} onBeforeReplace={holdRestoreReading} canReadLatest={()=>!hasUiDraft()&&!voice.busy()}/> }
+          {embedded ? <section className="browser-card"><h2>保存与恢复</h2><p>请使用日常工作台的“账户与同步 → 备份与恢复”。备份包含学习原文、历史证据、草稿和其他模块，恢复前可预览。模型连接、声音等设备设置留在本机，换设备后需重新配置。</p><button disabled={!onOpenBackup||controller.hasPending()||controller.isBusy()||hasUiDraft()} onClick={onOpenBackup}>打开备份与恢复</button></section> : <BrowserDataPanel controller={controller} onBeforeReplace={holdRestoreReading} onRestored={remountLearning} onRetrySaved={remountLab} onDirty={value => markDirty('import', value)} hasUnsavedReference={() => Object.entries(dirty.current).some(([scope,value])=>scope!=='import'&&value)}/>}
           <section className="browser-card"><h2>安装与离线</h2><p>{pwaStatus.message}</p>{pwaStatus.install !== 'unsupported' && <button onClick={() => void pwa.current?.install()}>{pwaStatus.install === 'prompt' ? '安装到主屏幕' : pwaStatus.install === 'installed' ? '查看安装说明' : '如何添加到主屏幕'}</button>}{pwaStatus.phase === 'update-waiting' && <button onClick={() => void update()}>保存并更新</button>}</section>
           <section className="browser-card"><h2>项目、模型与系统功能</h2><p>Docker 副本、文件编辑和本机项目运行目前在桌面端使用。手机无法直接访问电脑的 localhost。</p><p>手机可选模型帮助需会话 Key 与真实通道测试。已提供浏览器手动朗读；开源语音输入与关闭网页后的系统提醒继续开发中。离线实践与资料入口仍可使用。</p><a href="https://github.com/wondercloud-me/learning-workbench" target="_blank" rel="noopener noreferrer">桌面源码与平台进展 ↗</a></section>
         </section>

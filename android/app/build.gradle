@@ -1,0 +1,100 @@
+apply plugin: 'com.android.application'
+
+def workbenchPackage = new groovy.json.JsonSlurper().parse(rootProject.file('../package.json'))
+def workbenchVersion = workbenchPackage.version.toString()
+def versionParts = workbenchVersion =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/
+if (!versionParts.matches()) throw new GradleException('Android version must be plain major.minor.patch')
+def majorVersion = versionParts[0][1].toBigInteger()
+def minorVersion = versionParts[0][2].toBigInteger()
+def patchVersion = versionParts[0][3].toBigInteger()
+def workbenchVersionCode = majorVersion * 1000000 + minorVersion * 1000 + patchVersion
+if (minorVersion >= 1000 || patchVersion >= 1000 || workbenchVersionCode < 1 || workbenchVersionCode > 2147483647) {
+    throw new GradleException('Android version is outside the supported integer range')
+}
+
+def signingNames = ['WORKBENCH_ANDROID_KEYSTORE', 'WORKBENCH_ANDROID_KEY_ALIAS', 'WORKBENCH_ANDROID_STORE_PASSWORD_FILE', 'WORKBENCH_ANDROID_KEY_PASSWORD_FILE']
+def releaseInputsPresent = signingNames.every { System.getenv(it)?.trim() }
+def releaseRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') || it.tokenize(':').last() in ['build', 'assemble', 'bundle'] }
+def validateSigning = {
+    if (!releaseInputsPresent) throw new GradleException('Private Android release requires WORKBENCH_ANDROID_KEYSTORE, WORKBENCH_ANDROID_KEY_ALIAS, WORKBENCH_ANDROID_STORE_PASSWORD_FILE and WORKBENCH_ANDROID_KEY_PASSWORD_FILE')
+    ['WORKBENCH_ANDROID_KEYSTORE', 'WORKBENCH_ANDROID_STORE_PASSWORD_FILE', 'WORKBENCH_ANDROID_KEY_PASSWORD_FILE'].each {
+        if (!new File(System.getenv(it)).isFile()) throw new GradleException("Android release requires an existing file for ${it}")
+    }
+}
+if (releaseRequested) validateSigning()
+
+android {
+    namespace = "dev.growthworkbench.app"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "dev.growthworkbench.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode workbenchVersionCode.intValue()
+        versionName workbenchVersion
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        privateRelease {
+            if (releaseRequested) {
+                storeFile new File(System.getenv('WORKBENCH_ANDROID_KEYSTORE'))
+                storeType 'PKCS12'
+                keyAlias System.getenv('WORKBENCH_ANDROID_KEY_ALIAS')
+                storePassword new File(System.getenv('WORKBENCH_ANDROID_STORE_PASSWORD_FILE')).getText('UTF-8').trim()
+                keyPassword new File(System.getenv('WORKBENCH_ANDROID_KEY_PASSWORD_FILE')).getText('UTF-8').trim()
+                if (!storePassword || !keyPassword) throw new GradleException('Android release password files must be non-empty')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.privateRelease
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+// Catch release tasks reached indirectly, while leaving debug builds available.
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.project == project && it.name.toLowerCase().contains('release') }) {
+        validateSigning()
+        if (!releaseRequested) throw new GradleException('Request assembleRelease explicitly to load private release signing')
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation "net.zetetic:sqlcipher-android:4.19.1"
+    implementation "androidx.sqlite:sqlite:2.7.1"
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

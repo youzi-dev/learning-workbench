@@ -66,4 +66,7 @@ const calls = {
   testNotification: () => ipcRenderer.invoke('app:test-notification'),
   notificationTestStatus: () => ipcRenderer.invoke('app:notification-test-status')
 };
+contextBridge.exposeInMainWorld('workbenchV2', {request: (operation: string, args: unknown[] = []) => ipcRenderer.invoke('workbench-v2:request', operation, args)});
+
 contextBridge.exposeInMainWorld('workbench', calls);
+

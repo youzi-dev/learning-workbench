@@ -1,5 +1,5 @@
 import { constants } from 'node:fs';
-import { lstat, mkdir, open, readdir, realpath, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, open, readdir, realpath } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -7,12 +7,41 @@ import { pathToFileURL } from 'node:url';
 
 // Explicitly selected files are exported from the current working tree, never Git history.
 const rootFiles = new Set([
-  '.gitignore', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'CONTRIBUTING.md',
+  '.dockerignore', 'capacitor.config.ts', 'vite.android.config.ts', '.gitignore', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'CONTRIBUTING.md',
   'SECURITY.md', 'CHANGELOG.md', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml',
   'index.html', 'tsconfig.json', 'tsconfig.node.json', 'vite.config.ts', 'vite.browser.config.ts', 'vitest.config.ts',
 ]);
-const publicDocs = new Set(['docs/public-source.md']);
+const publicDocs = new Set([
+  'docs/public-source.md', 'docs/operations/deployment.md', 'docs/operations/backup-restore.md',
+  'docs/operations/offhost-backup.md', 'docs/operations/capture-broker.md',
+  'docs/releases/personal-workbench-acceptance.md', 'docs/research/2026-10-24-capture-source-evidence.json',
+]);
+const exactSources = new Set([
+  'android/build.gradle', 'android/settings.gradle', 'android/variables.gradle', 'android/gradle.properties',
+  'android/capacitor.settings.gradle', 'android/app/build.gradle', 'android/app/capacitor.build.gradle',
+  'android/app/proguard-rules.pro', 'android/app/src/main/AndroidManifest.xml',
+  'android/gradlew', 'android/gradlew.bat', 'android/gradle/wrapper/gradle-wrapper.properties',
+  'android/gradle/wrapper/gradle-wrapper.jar',
+  'deploy/.env.example', 'deploy/server.Dockerfile', 'deploy/worker.Dockerfile', 'deploy/Caddyfile',
+  'deploy/compose.yaml', 'deploy/backup.sh', 'deploy/restore.sh', 'deploy/egress-guard.sh', 'deploy/egress.conf',
+]);
+const extraTrees = [
+  'android/app/src/main/java', 'android/app/src/androidTest/java', 'android/app/src/main/res',
+  'android/app/src/main/assets/licenses', 'deploy/licenses',
+];
+const documentFixtures = new Set([
+  'tests/fixtures/workbench/reading-two-pages.pdf', 'tests/fixtures/workbench/schedule.csv',
+  'tests/fixtures/workbench/schedule.ics',
+]);
+const pdfFixturePath = 'tests/fixtures/workbench/reading-two-pages.pdf';
+const pdfFixtureSha256 = 'ccf50fc7169305910b032eadcf22cd47e61341d9835a3a8b8011f8ab220ae6a1';
+const wrapperPath = 'android/gradle/wrapper/gradle-wrapper.jar';
+const wrapperSha256 = '7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172';
+const executablePaths = new Set(['android/gradlew', 'deploy/backup.sh', 'deploy/restore.sh', 'deploy/egress-guard.sh']);
 const extensions = {
+  server: new Set(['.ts', '.sql']),
+  worker: new Set(['.ts']),
+  'android-web': new Set(['.html']),
   src: new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.css', '.json', '.html', '.svg']),
   tests: new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json', '.html', '.txt']),
   scripts: new Set(['.mjs', '.cjs', '.js', '.ts', '.py', '.sh', '.ps1']),
@@ -25,7 +54,8 @@ const extensions = {
 const excludedDirectories = new Set([
   '.git', '.cache', 'node_modules', 'userdata', 'user-data', 'personal', 'private',
   'backups', 'backup', 'exports', 'tutorial-cache', 'credentials', 'secrets', 'signing',
-  'resources', 'release', 'dist', 'dist-main', 'dist-browser', '__pycache__',
+  'resources', 'release', 'dist', 'dist-main', 'dist-browser', 'dist-android', 'dist-server',
+  'build', '.gradle', 'generated', 'capture-dist', '__pycache__',
 ]);
 const excludedFiles = /^(?:\.env(?:\..*)?|\.DS_Store|state\.json|models(?:-backup)?\.json|(?:credentials|secrets|backup)\.(?:json|ya?ml|txt)|.*\.(?:pem|key|p12|pfx|p8|sqlite|sqlite3|db|bak))$/i;
 const maxFileBytes = 8 * 1024 * 1024;
@@ -55,8 +85,11 @@ function allowedName(name) {
 }
 
 function allowedType(relative) {
+  if (documentFixtures.has(relative)) return true;
   const [root] = relative.split('/');
   const name = path.posix.basename(relative);
+  if (root === 'android') return new Set(['.java', '.xml', '.png', '.txt', '.json']).has(path.posix.extname(name).toLowerCase());
+  if (root === 'deploy') return new Set(['.md', '.txt']).has(path.posix.extname(name).toLowerCase());
   return extensions[root]?.has(path.posix.extname(name).toLowerCase())
     || (root === 'licenses' && /(?:^|[-.])(?:LICENSE|COPYING|NOTICE|AUTHORS)(?:-[A-Z0-9-]+)?$/i.test(name));
 }
@@ -92,6 +125,16 @@ function scanContents(relative, buffer) {
       reject('personal home path', relative);
     }
   }
+  if (relative === pdfFixturePath) {
+    if (buffer.subarray(0, 5).toString('ascii') !== '%PDF-'
+      || createHash('sha256').update(buffer).digest('hex') !== pdfFixtureSha256) reject('fixture integrity', relative);
+    return;
+  }
+  if (relative === wrapperPath) {
+    if (!buffer.subarray(0, 4).equals(Buffer.from([80, 75, 3, 4]))
+      || createHash('sha256').update(buffer).digest('hex') !== wrapperSha256) reject('wrapper integrity', relative);
+    return;
+  }
   const extension = path.posix.extname(relative).toLowerCase();
   const magic = {
     '.png': () => buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])),
@@ -106,28 +149,35 @@ function scanContents(relative, buffer) {
   if (!magic[extension] && contents.includes('\0')) reject('unexpected binary file type', relative);
 }
 
-function validateReadmeLinks(files) {
+function validateDocumentLinks(files) {
   const selected = new Set(files.map(file => file.path));
-  const readme = files.find(file => file.path === 'README.md');
-  if (!readme) reject('missing required file', 'README.md');
-  const text = readme.buffer.toString('utf8');
-  const targets = [
-    ...Array.from(text.matchAll(/!?\[[^\]]*\]\(<?([^\s)>]+)>?(?:\s+"[^"]*")?\)/g), match => match[1]),
-    ...Array.from(text.matchAll(/^\s*\[[^\]]+\]:\s*<?([^\s>]+)>?/gm), match => match[1]),
-  ];
-  for (const target of targets) {
-    if (/^(?:[a-z][a-z0-9+.-]*:|#|\/\/)/i.test(target)) continue;
-    let decoded;
-    try { decoded = decodeURIComponent(target.split(/[?#]/)[0]); }
-    catch { reject('invalid README link', 'README.md'); }
-    const relative = path.posix.normalize(decoded.replace(/:\d+$/, ''));
-    if (selected.has(relative) || [...selected].some(file => file.startsWith(relative.replace(/\/$/, '') + '/'))) continue;
-    reject('README link points outside selected public files', 'README.md');
+  if (!selected.has('README.md')) reject('missing required file', 'README.md');
+  for (const document of files.filter(file => file.path === 'README.md' || (publicDocs.has(file.path) && file.path.endsWith('.md')))) {
+    const text = document.buffer.toString('utf8');
+    const targets = [
+      ...Array.from(text.matchAll(/!?\[[^\]]*\]\(<?([^\s)>]+)>?(?:\s+"[^"]*")?\)/g), match => match[1]),
+      ...Array.from(text.matchAll(/^\s*\[[^\]]+\]:\s*<?([^\s>]+)>?/gm), match => match[1]),
+    ];
+    for (const target of targets) {
+      if (/^(?:[a-z][a-z0-9+.-]*:|#|\/\/)/i.test(target)) continue;
+      let decoded;
+      try { decoded = decodeURIComponent(target.split(/[?#]/)[0]); }
+      catch { reject('invalid document link', document.path); }
+      const relative = path.posix.normalize(path.posix.join(path.posix.dirname(document.path), decoded.replace(/:\d+$/, '')));
+      if (selected.has(relative) || [...selected].some(file => file.startsWith(relative.replace(/\/$/, '') + '/'))) continue;
+      reject('document link points outside selected public files', document.path);
+    }
   }
 }
 
 async function readSelected(source, relative) {
-  const file = path.join(source, ...relative.split('/'));
+  const parts = relative.split('/');
+  for (let index = 1; index < parts.length; index++) {
+    const parent = await lstat(path.join(source, ...parts.slice(0, index)));
+    if (parent.isSymbolicLink()) reject('symlink', parts.slice(0, index).join('/'));
+    if (!parent.isDirectory()) reject('unexpected directory type', relative);
+  }
+  const file = path.join(source, ...parts);
   const stat = await lstat(file);
   if (stat.isSymbolicLink()) reject('symlink', relative);
   if (!stat.isFile()) reject('unexpected file type', relative);
@@ -144,13 +194,21 @@ async function readSelected(source, relative) {
     const buffer = await handle.readFile();
     if (buffer.length > maxFileBytes) reject('file size limit', relative);
     scanContents(relative, buffer);
-    return { path: relative, buffer, bytes: buffer.length, sha256: createHash('sha256').update(buffer).digest('hex') };
+    const executable = executablePaths.has(relative) || (relative.startsWith('scripts/') && /\.(?:sh|py|mjs|cjs|js)$/.test(relative));
+    const mode = executable && (opened.mode & 0o111) ? '0755' : '0644';
+    return { path: relative, buffer, bytes: buffer.length, sha256: createHash('sha256').update(buffer).digest('hex'), mode };
   } finally { await handle.close(); }
 }
 
-async function collectFiles(source) {
+async function collectFiles(source, { omitWorkflows }) {
   const files = [];
   async function walk(relative) {
+    const parts = relative.split('/');
+    for (let index = 1; index < parts.length; index++) {
+      const parent = await lstat(path.join(source, ...parts.slice(0, index)));
+      if (parent.isSymbolicLink()) reject('symlink', parts.slice(0, index).join('/'));
+      if (!parent.isDirectory()) reject('unexpected directory type', relative);
+    }
     const directory = path.join(source, ...relative.split('/'));
     const stat = await lstat(directory);
     if (stat.isSymbolicLink()) reject('symlink', relative);
@@ -158,6 +216,7 @@ async function collectFiles(source) {
     for (const entry of (await readdir(directory, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name, 'en'))) {
       if (excludedDirectories.has(entry.name.toLowerCase()) || excludedFiles.test(entry.name)) continue;
       const selected = `${relative}/${entry.name}`;
+      if (omitWorkflows && selected === '.github/workflows') continue;
       if (!allowedName(entry.name)) reject('unexpected pathname', selected);
       if (entry.isSymbolicLink()) reject('symlink', selected);
       if (entry.isDirectory()) await walk(selected);
@@ -170,12 +229,10 @@ async function collectFiles(source) {
   for (const name of [...rootFiles].sort()) {
     if (await statIfPresent(path.join(source, name))) files.push(await readSelected(source, name));
   }
-  for (const relative of publicDocs) {
-    const parent = await statIfPresent(path.join(source, 'docs'));
-    if (parent?.isSymbolicLink()) reject('symlink', 'docs');
+  for (const relative of [...publicDocs, ...exactSources]) {
     if (await statIfPresent(path.join(source, ...relative.split('/')))) files.push(await readSelected(source, relative));
   }
-  for (const name of Object.keys(extensions)) {
+  for (const name of [...Object.keys(extensions), ...extraTrees]) {
     if (await statIfPresent(path.join(source, name))) await walk(name);
   }
   files.sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
@@ -183,11 +240,20 @@ async function collectFiles(source) {
     if (!files.some(file => file.path === required)) reject('missing required file', required);
   }
   if (files.reduce((total, file) => total + file.bytes, 0) > maxTotalBytes) reject('total source size limit');
-  validateReadmeLinks(files);
+  validateDocumentLinks(files);
   return files;
 }
 
-export async function exportPublicSource({ sourceDir = process.cwd(), destination }) {
+async function writeExclusive(file, buffer, mode) {
+  const handle = await open(file, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | (constants.O_NOFOLLOW ?? 0), mode);
+  try {
+    await handle.writeFile(buffer);
+    // A restrictive operator umask must not make the published manifest inaccurate.
+    await handle.chmod(mode);
+  } finally { await handle.close(); }
+}
+
+export async function exportPublicSource({ sourceDir = process.cwd(), destination, omitWorkflows = false }) {
   if (!destination) reject('output argument is required');
   let output;
   try {
@@ -209,11 +275,13 @@ export async function exportPublicSource({ sourceDir = process.cwd(), destinatio
     if (physicalOutput === path.join(source, '.cache')) reject('output must be a new cache subdirectory');
     if (await statIfPresent(output)) reject('output already exists');
     output = physicalOutput;
-    const files = await collectFiles(source);
-    const manifestFiles = files.map(({ path: relative, bytes, sha256 }) => ({ path: relative, bytes, sha256 }));
+    if (typeof omitWorkflows !== 'boolean') reject('invalid workflow option');
+    const files = await collectFiles(source, { omitWorkflows });
+    const manifestFiles = files.map(({ path: relative, bytes, sha256, mode }) => ({ path: relative, bytes, sha256, mode }));
     const manifest = {
-      schemaVersion: 1,
-      policyVersion: 1,
+      schemaVersion: 2,
+      policyVersion: 2,
+      omitWorkflows,
       sourceTreeSha256: createHash('sha256').update(JSON.stringify(manifestFiles)).digest('hex'),
       files: manifestFiles,
     };
@@ -234,10 +302,10 @@ export async function exportPublicSource({ sourceDir = process.cwd(), destinatio
       const target = path.join(output, ...file.path.split('/'));
       await mkdir(path.dirname(target), { recursive: true, mode: 0o755 });
       if (!inside(output, await realpath(path.dirname(target)))) reject('output path escaped');
-      await writeFile(target, file.buffer, { flag: 'wx', mode: 0o644 });
+      await writeExclusive(target, file.buffer, Number.parseInt(file.mode, 8));
     }
     await assertOwnedOutput();
-    await writeFile(path.join(output, manifestName), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx', mode: 0o644 });
+    await writeExclusive(path.join(output, manifestName), JSON.stringify(manifest, null, 2) + '\n', 0o644);
     return manifest;
   } catch (error) {
     // Pathname-based recursive cleanup could remove an unrelated directory after concurrent substitution.
@@ -251,12 +319,13 @@ function parseArgs(args) {
   const options = {};
   for (let index = 0; index < args.length; index++) {
     const key = args[index];
+    if (key === '--omit-workflows' && !Object.hasOwn(options, key)) { options[key] = true; continue; }
     if (!['--source', '--output'].includes(key) || Object.hasOwn(options, key)) reject('invalid or duplicate argument');
     const value = args[++index];
     if (!value || value.startsWith('--')) reject('argument needs a value');
     options[key] = value;
   }
-  return { sourceDir: options['--source'], destination: options['--output'] };
+  return { sourceDir: options['--source'], destination: options['--output'], omitWorkflows: options['--omit-workflows'] ?? false };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

@@ -35,15 +35,16 @@ function freeze<T>(value: T): T {
   }
   return value;
 }
-function checked(value: DesktopSnapshot): DesktopSnapshot {
+function checked(value: DesktopSnapshot, validate = validateBrowserDocument): DesktopSnapshot {
   for (const key of ['generation', 'revision', 'mutationRevision'] as const) {
     if (!Number.isSafeInteger(value[key]) || value[key] < 0) throw new Error('保存确认版本格式不正确');
   }
-  return {...value, document: validateBrowserDocument(value.document)};
+  return {...value, document: validate(value.document)};
 }
 
 /** Pending input is visible immediately. Only the port's actual ACK commits it. */
-export function createDesktopDocumentController(port: DesktopDocumentPort): DesktopDocumentController {
+export function createDesktopDocumentController(port: DesktopDocumentPort, options: {validate?: (value: unknown) => BrowserDocument} = {}): DesktopDocumentController {
+  const validate = options.validate ?? validateBrowserDocument;
   let document = emptyBrowserDocument();
   let committedDocument = document;
   let generation = 0, revision = 0, mutationRevision = 0, confirmedMutation = 0;
@@ -75,7 +76,7 @@ export function createDesktopDocumentController(port: DesktopDocumentPort): Desk
     const operation = tail.then(async () => {
       available(true);
       if (generation !== write.generation) throw new Error('学习文档已被替换');
-      const ack = checked(await port.save(write));
+      const ack = checked(await port.save(write), validate);
       available(true);
       if (ack.generation !== generation || ack.mutationRevision !== write.mutationRevision) throw new Error('保存确认与当前文档或输入版本不一致');
       // Runtime events can overtake an ACK. Their newer Node revision owns these
@@ -124,7 +125,7 @@ export function createDesktopDocumentController(port: DesktopDocumentPort): Desk
       if (closed) return Promise.reject(new Error('学习文档已关闭'));
       if (!starting) starting = (async () => {
         try {
-          const initial = checked(await port.load());
+          const initial = checked(await port.load(), validate);
           if (closed) throw new Error('学习文档已关闭');
           document = initial.document; committedDocument = document;
           generation = initial.generation; revision = initial.revision;
@@ -147,7 +148,7 @@ export function createDesktopDocumentController(port: DesktopDocumentPort): Desk
         available();
         if (options.generation !== undefined && options.generation !== generation) throw new Error('学习文档已被替换');
         if (!Number.isSafeInteger(mutationRevision + 1)) throw new Error('输入版本已超出范围');
-        const candidate = validateBrowserDocument(runtimeFields(mutator(structuredClone(document)), document));
+        const candidate = validate(runtimeFields(mutator(structuredClone(document)), document));
         document = candidate; mutationRevision += 1;
         const operation = enqueue(candidate, mutationRevision);
         publish();
@@ -161,7 +162,7 @@ export function createDesktopDocumentController(port: DesktopDocumentPort): Desk
         return;
       }
       if (data.generation !== generation || !Number.isSafeInteger(data.revision) || data.revision <= revision) return;
-      const next = validateBrowserDocument({...document, state: {...document.state, usageRecords: data.usageRecords, contexts: data.contexts}});
+      const next = validate({...document, state: {...document.state, usageRecords: data.usageRecords, contexts: data.contexts}});
       document = next; committedDocument = runtimeFields(committedDocument, next);
       revision = data.revision;
       publish();
@@ -179,7 +180,7 @@ export function createDesktopDocumentController(port: DesktopDocumentPort): Desk
         const result = await port.importBackup(generation);
         available(true);
         if (result === null) return false;
-        const restored = checked(result);
+        const restored = checked(result, validate);
         if (restored.generation !== generation + 1 || restored.mutationRevision !== 0 || restored.revision <= revision) throw new Error('恢复确认版本与当前文档不一致');
         document = committedDocument = restored.document; generation = restored.generation; revision = restored.revision;
         mutationRevision = confirmedMutation = 0; error = null;

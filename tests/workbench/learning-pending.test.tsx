@@ -1,0 +1,43 @@
+import React from 'react';
+import {afterEach,expect,it,vi} from 'vitest';
+import {createRequire} from 'node:module';
+import {IDBFactory} from 'fake-indexeddb';
+import fixture from '../fixtures/workbench/v1-complete.json';
+import {openRepository} from '../../src/platforms/browser/repository';
+import {migrateV1} from '../../src/workbench/storage/migration';
+import {createLearningService,validateLegacyDocument} from '../../src/modules/learning/compatibility';
+import {createLearningBrowserRepository} from '../../src/modules/learning/service';
+import {createBrowserController} from '../../src/browser/controller';
+import {createLearningRecoveryStore} from '../../src/modules/learning/pending-recovery';
+import {LearningPendingPanel} from '../../src/modules/learning/pending-panel';
+const cleanups:Array<()=>unknown>=[];afterEach(async()=>{for(const cleanup of cleanups.splice(0).reverse())await cleanup();});
+it('real_pending_panel_archives_conflicted_input_before_reading_latest',async()=>{
+  const {JSDOM}=createRequire(import.meta.url)('jsdom');const dom=new JSDOM('<div id="root"></div>',{url:'https://workbench.test/'});
+  vi.stubGlobal('window',dom.window);vi.stubGlobal('document',dom.window.document);vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT',true);cleanups.push(()=>{vi.unstubAllGlobals();dom.window.close();});
+  const {createRoot}=await import('react-dom/client'),{act}=await import('react');
+  const repository=await openRepository('pending-account',{indexedDB:new IDBFactory()});cleanups.push(()=>repository.close());await migrateV1(new TextEncoder().encode(JSON.stringify(fixture)),repository);
+  const options={repository,deviceId:repository.deviceId!,preferences:{read:()=>repository.devicePreferences()},signal:new AbortController().signal};
+  const service=createLearningService(options),other=createLearningService(options);const controller=await createBrowserController(createLearningBrowserRepository(service),{validate:validateLegacyDocument});cleanups.push(()=>controller.close());
+  const newer=await other.load(),remote=structuredClone(newer.document);remote.state.reading.title='latest saved reading';await other.commitLegacyDiff(newer.document,remote,newer.expected);
+  await expect(controller.change(document=>({...document,state:{...document.state,reading:{...document.state.reading,title:'my conflicted reading'}},drafts:{...document.drafts,messages:{...document.drafts.messages,'column-old':'my unsent explanation'}}}))).rejects.toMatchObject({code:'revision-conflict'});
+  expect(controller.hasPending()).toBe(true);
+  let archiveStarted!:()=>void,releaseArchive!:()=>void,restored!:()=>void;
+  const started=new Promise<void>(resolve=>{archiveStarted=resolve;});
+  const released=new Promise<void>(resolve=>{releaseArchive=resolve;});
+  const completed=new Promise<void>(resolve=>{restored=resolve;});
+  const storedRecovery=createLearningRecoveryStore(options);
+  // Hold the real persistence step to test ordering without a timing assumption.
+  const recovery={...storedRecovery,async archive(document:Parameters<typeof storedRecovery.archive>[0]){archiveStarted();await released;return storedRecovery.archive(document);}};
+  const root=createRoot(dom.window.document.getElementById('root'));cleanups.push(()=>act(async()=>root.unmount()));
+  await act(async()=>root.render(<LearningPendingPanel controller={controller} recovery={recovery} onRestored={restored} onBeforeReplace={()=>()=>{}} canReadLatest={()=>true}/>));
+  const button=Array.from(dom.window.document.querySelectorAll('button')).find((item:any)=>item.textContent==='保留待存副本并读取最新') as HTMLButtonElement;
+  await act(async()=>{
+    button.click();await started;
+    expect(controller.hasPending()).toBe(true);
+    expect(controller.pendingDocument().state.reading.title).toBe('my conflicted reading');
+    expect(controller.pendingDocument().drafts.messages['column-old']).toBe('my unsent explanation');
+    releaseArchive();await completed;
+  });
+  expect(controller.hasPending()).toBe(false);expect(controller.pendingDocument().state.reading.title).toBe('latest saved reading');
+  const copies=await recovery.list();expect(copies).toHaveLength(1);expect(copies[0].document.state.reading.title).toBe('my conflicted reading');expect(copies[0].document.drafts.messages['column-old']).toBe('my unsent explanation');expect(dom.window.document.body.textContent).toContain('下载此副本');
+});

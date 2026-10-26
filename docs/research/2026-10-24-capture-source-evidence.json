@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-23T16:57:49.603Z",
+  "image": "workbench-test-capture:2026-10-24",
+  "downloader": {
+    "name": "yt-dlp",
+    "version": "2026.10.21"
+  },
+  "isolation": "nonroot worker; all capabilities dropped; namespace firewall proxy-only; no host mounts",
+  "results": [
+    {
+      "kind": "video-adapter",
+      "site": "Bilibili",
+      "url": "https://www.bilibili.com/video/BV17x411w7KC/",
+      "date": "2026-10-23T16:54:41.245Z",
+      "version": "2026.10.21",
+      "state": "needs-permission",
+      "errorCode": "PERMISSION_REQUIRED",
+      "limitations": "This source did not produce a verified file; not a passing source",
+      "imageDigest": "sha256:25bfab55247f6463bda8de336ba5fec62241ca4fbc841f49a32967af4e4fb350"
+    },
+    {
+      "kind": "video-adapter",
+      "site": "YouTube",
+      "url": "https://www.youtube.com/watch?v=BaW_jenozKc",
+      "date": "2026-10-23T16:54:45.789Z",
+      "version": "2026.10.21",
+      "state": "unsupported",
+      "errorCode": "VIDEO_UNAVAILABLE",
+      "limitations": "This source did not produce a verified file; not a passing source",
+      "imageDigest": "sha256:25bfab55247f6463bda8de336ba5fec62241ca4fbc841f49a32967af4e4fb350"
+    },
+    {
+      "kind": "image",
+      "site": "W3C",
+      "url": "https://www.w3.org/Icons/w3c_home.png",
+      "date": "2026-10-23T16:55:21.961Z",
+      "version": "2026.10.21",
+      "state": "downloaded",
+      "sha256": "590608bf256237f22d84bbab2a0a1afc0d4f20db6350bbac2c6841f1f3e13b01",
+      "size": 1848,
+      "mime": "image/png",
+      "imageDigest": "sha256:25bfab55247f6463bda8de336ba5fec62241ca4fbc841f49a32967af4e4fb350"
+    },
+    {
+      "kind": "pdf",
+      "site": "W3C",
+      "url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "date": "2026-10-23T16:55:27.219Z",
+      "version": "2026.10.21",
+      "state": "downloaded",
+      "sha256": "3df79d34abbca99308e79cb94461c1893582604d68329a41fd4bec1885e6adb4",
+      "size": 13264,
+      "mime": "application/pdf",
+      "imageDigest": "sha256:25bfab55247f6463bda8de336ba5fec62241ca4fbc841f49a32967af4e4fb350"
+    },
+    {
+      "kind": "html-image",
+      "site": "W3C",
+      "url": "https://www.w3.org/",
+      "date": "2026-10-23T16:55:29.284Z",
+      "version": "2026.10.21",
+      "state": "downloaded-selected-image",
+      "selectedUrl": "https://www.w3.org/assets/website-2021/images/w3c-opengraph-image.png",
+      "sha256": "04b94bbf8de2267ef9dccf85fe593250b3528f3333a3c649becb6ad3460bac07",
+      "size": 47572,
+      "mime": "image/png",
+      "imageDigest": "sha256:25bfab55247f6463bda8de336ba5fec62241ca4fbc841f49a32967af4e4fb350"
+    },
+    {
+      "kind": "video-adapter",
+      "site": "Vimeo Big Buck Bunny",
+      "url": "https://vimeo.com/1084537",
+      "date": "2026-10-23T16:56:40.590Z",
+      "version": "2026.10.21",
+      "state": "unsupported",
+      "errorCode": "VIDEO_UNAVAILABLE",
+      "limitations": "This source did not produce a verified file; not a passing source",
+      "imageDigest": "sha256:25bfab55247f6463bda8de336ba5fec62241ca4fbc841f49a32967af4e4fb350"
+    },
+    {
+      "kind": "video-direct",
+      "site": "W3Schools Big Buck Bunny sample",
+      "url": "https://www.w3schools.com/html/mov_bbb.mp4",
+      "date": "2026-10-23T16:57:43.090Z",
+      "version": "2026.10.21",
+      "state": "downloaded",
+      "strategy": "yt-dlp",
+      "size": 788493,
+      "sha256": "3bb938fb70049e3e45f533b37ccae995ae96516e04c2f35b0c1142e47b2a39c1",
+      "mime": "video/mp4",
+      "imageDigest": "sha256:cfc445fc80242c5f0b5a80f58003fc7aa8aefc84502c438d456e69404afd6c43"
+    }
+  ],
+  "limitations": [
+    "Public accessibility is specific to this date, source URL and environment.",
+    "A site adapter name is not a guarantee of download availability.",
+    "No personal accounts or cookies were read."
+  ],
+  "imageDigest": "per-result"
+}

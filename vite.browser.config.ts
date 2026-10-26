@@ -7,9 +7,14 @@ const base=process.env.WORKBENCH_BROWSER_BASE??'/learn/';
 if(!/^\/(?:[A-Za-z0-9_-]+\/)*$/.test(base))throw new Error('WORKBENCH_BROWSER_BASE must start and end with / and contain only local path segments');
 const buildId=randomUUID();
 const optionalAsrEnabled=process.env.WORKBENCH_BROWSER_ASR==='1';
+const localSyncEnabled=process.env.WORKBENCH_BROWSER_LOCAL_SYNC==='1';
 const coreModules=new Set(builtinModules.flatMap(name=>[name,name.replace(/^node:/,'')]));
 const browserBoundary:Plugin={
  name:'workbench-browser-boundary',
+ transformIndexHtml(html){
+  // Opt in only for an isolated localhost verification build; releases stay HTTPS-only.
+  return localSyncEnabled ? html.replace("connect-src 'self' https:;", "connect-src 'self' https: http://127.0.0.1:* http://localhost:*;") : html;
+ },
  resolveId(source){
   if(coreModules.has(source)||/^(?:node:|electron(?:\/|$)|monaco-editor(?:\/|$))/.test(source))throw new Error('Desktop dependency reached browser build: '+source);
  },
@@ -17,7 +22,7 @@ const browserBoundary:Plugin={
   for(const item of Object.values(bundle))if(item.type==='chunk'){
    for(const id of Object.keys(item.modules))if(/(?:\/src\/(?:main|preload)\/|\/node_modules\/(?:electron|monaco-editor)\/)/.test(id))throw new Error('Desktop module in browser graph: '+id);
   }
-  this.emitFile({type:'asset',fileName:'browser-build.json',source:JSON.stringify({base,buildId,optionalAsrEnabled})});
+  this.emitFile({type:'asset',fileName:'browser-build.json',source:JSON.stringify({base,buildId,optionalAsrEnabled,localSyncEnabled})});
  }
 };
 export default defineConfig({

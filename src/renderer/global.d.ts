@@ -7,6 +7,7 @@ import type { ApiProfile } from '../core/model-library';
 import type {DailyReminderStatus, LoginStatus, NotificationTestStatus} from '../core/system-controls';
 declare global {
   interface Window {
+    workbenchV2: import('../platforms/electron/ports').ElectronWorkbenchBridge;
     workbench: {
       readerViewport(rect:ReaderRect|null,visible:boolean):Promise<ReaderStatus>;
       readerNavigate(url:string):Promise<ReaderStatus>;

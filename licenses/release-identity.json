@@ -1,0 +1,11 @@
+{
+  "name": "growth-workbench",
+  "productName": "学习工作台",
+  "appId": "dev.growthworkbench.app",
+  "version": "0.11.1",
+  "androidVersionCode": 11001,
+  "distribution": "private",
+  "macOS": "ad hoc signed; unnotarized",
+  "windows": "unsigned private installer",
+  "android": "stable private release signing required; certificate checked separately"
+}

@@ -1,0 +1,16 @@
+{
+	admin off
+}
+{$WORKBENCH_DOMAIN} {
+	@api path /v1/* /healthz
+	handle @api {
+		reverse_proxy api:8787 {
+			transport http {
+				dial_timeout 3s
+			}
+		}
+	}
+	handle {
+		respond 404
+	}
+}

@@ -43,7 +43,7 @@ for (const key of ['source', 'builds', 'docs', 'license', 'notices']) assert.equ
 assert.equal(defaults.release, '#platforms', 'Unconfigured releases must not imply an available download');
 const sample = resolveProjectLinks({ repositoryUrl: 'https://github.com/example/workbench/' });
 assert.equal(sample.source, 'https://github.com/example/workbench');
-assert.equal(sample.builds, 'https://github.com/example/workbench/actions');
+assert.equal(sample.builds, '#project-status', 'A repository alone does not imply available CI');
 assert.equal(sample.docs, 'https://github.com/example/workbench/#readme');
 assert.equal(sample.release, '#platforms', 'A public repository alone does not enable a download');
 assert.throws(() => resolveProjectLinks({ repositoryUrl: 'javascript:alert(1)' }));

@@ -2,6 +2,8 @@ node_modules/
 dist/
 dist-main/
 dist-browser/
+dist-server/
+/deploy/capture-dist/
 release/
 .superpowers/
 *.log
@@ -36,3 +38,9 @@ tutorial-cache/
 /document-v1.json
 /models-backup.json
 /learning-backup*.json
+
+dist-android/
+
+# Private signing identities must never enter version control.
+*.jks
+*.keystore

@@ -1,0 +1,6 @@
+SQLite 3.53.4 is incorporated in SQLCipher Core 4.19.0.
+SQLite deliverable code is dedicated to the public domain by its authors.
+Primary source: https://www.sqlite.org/copyright.html
+Checked: 2026-10-24
+
+SQLCipher additions are separately subject to their retained BSD-style license.

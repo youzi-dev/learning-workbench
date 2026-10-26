@@ -1,0 +1,6 @@
+import type {ModuleManifest,EntitySchema} from '../../workbench/contracts/module';
+import type {JsonValue} from '../../workbench/contracts/data';
+import {parseSeries,parseOverride,objectInput,text} from './model';
+const schema=(parse:(value:unknown)=>unknown):EntitySchema=>({version:1,parse:value=>parse(value) as JsonValue,migrate(value,from){if(from!==1)throw Error('此数据版本需要更新客户端');return value;}});
+/** Metadata only: this import has no React, DOM or platform side effects. */
+export const manifest:ModuleManifest&{title:string}={id:'calendar',title:'日程',version:'1.0.0',hostApiVersion:1,schemas:{'calendar.series':schema(parseSeries),'calendar.override':schema(parseOverride),'calendar.activity':schema(value=>{const v=objectInput(value);return {action:text(v.action,'动作',false),entityId:text(v.entityId,'安排',false),title:text(v.title,'标题',false),at:text(v.at,'时间',false)};}),'calendar.importSource':schema(value=>{const v=objectInput(value);if(!Array.isArray(v.rows))throw Error('来源行映射无效');return {sourceId:text(v.sourceId,'来源',false),rows:v.rows.map(row=>{const r=objectInput(row);return {rowId:text(r.rowId,'行 ID',false),seriesId:text(r.seriesId,'系列',false),fingerprint:text(r.fingerprint,'行内容',false)};})};})},capabilities:[]};

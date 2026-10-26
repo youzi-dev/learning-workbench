@@ -1,0 +1,15 @@
+import {afterEach,expect,it} from 'vitest';
+import {IDBFactory} from 'fake-indexeddb';
+import {createWorkbenchRuntime} from '../../src/workbench/runtime';
+import {createBrowserPorts} from '../../src/platforms/browser/ports';
+import {openRepository} from '../../src/platforms/browser/repository';
+import {manifest} from '../../src/modules/calendar/manifest';
+import {createModule} from '../../src/modules/calendar/module';
+import {CalendarService} from '../../src/modules/calendar/service';
+import {parseSeries} from '../../src/modules/calendar/model';
+import {attachAndroidReminders} from '../../src/platforms/android/boot';
+import {createAndroidNotifications} from '../../src/platforms/android/notifications';
+import type {AndroidBridge} from '../../src/platforms/android/bridge';
+const cleanup:(()=>unknown)[]=[];
+afterEach(async()=>{for(const fn of cleanup.splice(0).reverse())await fn();});
+it('edit_rebuild_failure_after_success_is_visible_and_foreground_retry_clears_it',async()=>{const factory=new IDBFactory();let shouldFail=false;let completed:()=>void=()=>{};const listeners=new Map<string,()=>void>();const bridge={async notificationCapabilities(){return {permission:'granted',exact:true};},async notificationReconcile(){completed();if(shouldFail)throw Object.assign(Error('alarm service unavailable'),{code:'ALARM_UNAVAILABLE'});},async addListener(event:string,listener:()=>void){listeners.set(event,listener);return {async remove(){listeners.delete(event);}};}} as unknown as AndroidBridge;const ports=createBrowserPorts();const runtime=await createWorkbenchRuntime({registrations:[{manifest,async load(){return createModule();}}],ports,autoSync:false,open:account=>openRepository(account,{indexedDB:factory,schemas:{calendar:Object.fromEntries(Object.entries(manifest.schemas).map(([k,s])=>[k,s.version]))}}),connection:{async loadProfile(){return null;},async saveProfile(){},async pair(){throw Error('not used');},transport(){throw Error('not used');},async clearCredential(){},async authorizedFetch(){throw Error('not used');}}});cleanup.push(async()=>{shouldFail=false;await runtime.stop();});const notifications=createAndroidNotifications(bridge);await attachAndroidReminders(runtime,bridge);const service=new CalendarService(runtime.snapshot().repository,runtime.snapshot().repository.deviceId);await service.create(parseSeries({title:'编辑后的安排',timeZone:'UTC',startLocal:new Date(Date.now()+7200000).toISOString().slice(0,16),endLocal:new Date(Date.now()+10800000).toISOString().slice(0,16)}));shouldFail=true;const failedAttempt=new Promise<void>(resolve=>{completed=resolve;});runtime.snapshot().host.notifyDataChanged();await failedAttempt;await Promise.resolve();await Promise.resolve();expect(await notifications.status()).toMatchObject({permission:'granted',exact:true,operation:{state:'failed'}});shouldFail=false;const retried=new Promise<void>(resolve=>{completed=resolve;});listeners.get('foreground')!();await retried;await Promise.resolve();await Promise.resolve();expect(await notifications.status()).toMatchObject({operation:{state:'scheduled',error:null}});});

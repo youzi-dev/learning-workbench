@@ -178,3 +178,14 @@ h3 { font-size: 22px; line-height: 1.4; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Download choices share the existing palette and spacing scale. */
+[hidden] { display: none !important; }
+.platform-card { min-width: 0; }
+.platform-card > p { margin-top: 16px; color: var(--muted); }
+.platform-card.is-recommended { border-color: var(--green); background: var(--green-soft); }
+.platform-card [data-recommendation] { color: var(--green); background: var(--surface); }
+.download-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.download-options .button { width: 100%; text-align: center; }
+.download-options [aria-disabled="true"] { color: var(--muted); background: var(--soft); cursor: default; }
+.platform-note, .platform-card { overflow-wrap: anywhere; }
