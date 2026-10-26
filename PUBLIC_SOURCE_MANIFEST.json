@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "policyVersion": 2,
   "omitWorkflows": true,
-  "sourceTreeSha256": "b13168f8a129804a6064b8da66c80bc971caa529441dc4165175dfaaa84a5b61",
+  "sourceTreeSha256": "43236096218ccacb2b8bc691afcaba6d64d69e0a82bbd038d26f4f2e52e6dab3",
   "files": [
     {
       "path": ".dockerignore",
@@ -24,8 +24,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7849,
-      "sha256": "f902cb0bec77140809f079903bc3f929b2938eb97430bde48fc567c561aed351",
+      "bytes": 7904,
+      "sha256": "9018c192535094d5c05c254f611338955ecbde60a178ab92722ac00b4d5ab680",
       "mode": "0644"
     },
     {
@@ -690,8 +690,8 @@
     },
     {
       "path": "docs/releases/personal-workbench-acceptance.md",
-      "bytes": 3368,
-      "sha256": "c3bf837dd71858892352185a13f071adefce7de7f874f52e4fc4fc888509464f",
+      "bytes": 3948,
+      "sha256": "6aaf2b4e7e00ec6c5d5a7e9ef94d1de13411792b8d1b6fcdc415adecfada9362",
       "mode": "0644"
     },
     {
@@ -3324,14 +3324,14 @@
     },
     {
       "path": "website/config.js",
-      "bytes": 549,
-      "sha256": "da8a537710efe234dcf2f3688a2895ffaff1991fdca0ea1353ef757c4a5c54c6",
+      "bytes": 1104,
+      "sha256": "c5127e5241abd95b72230a1b780c40e84c014dfcf4446ddd4e8b2649c91391ed",
       "mode": "0644"
     },
     {
       "path": "website/downloads.test.mjs",
-      "bytes": 4349,
-      "sha256": "ee98836405a38444eea6bf11104cf001a7abe8df92d6df099e1fc1a7e8cd304d",
+      "bytes": 4403,
+      "sha256": "751c492273396d7982ac07225ea102f4acc4efc7fa7888b98b12043a1433c34b",
       "mode": "0644"
     },
     {
@@ -3342,8 +3342,8 @@
     },
     {
       "path": "website/index.html",
-      "bytes": 14236,
-      "sha256": "e4299a87b8b41c81f3f05d10a36158723c924b563c7eb1155a670b715f323ce2",
+      "bytes": 14208,
+      "sha256": "86665bba151c402cc1602033108fc4bdda526b9d82fb68ff9bd3e4d7f8dc044b",
       "mode": "0644"
     },
     {

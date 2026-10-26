@@ -7,6 +7,7 @@ import {siteConfig} from './config.js';
 
 const html = await readFile(new URL('./index.html', import.meta.url), 'utf8');
 const version = '0.11.1';
+const unpublished = {...siteConfig, downloads: {}};
 const asset = name => `https://github.com/example/workbench/releases/download/v${version}/${name}`;
 const configured = {
   ...siteConfig, version,
@@ -34,7 +35,7 @@ test('OS recommendation distinguishes Android, Windows, Mac, iOS and unknown wit
 
 test('unpublished packages produce no download href, while published links retain exact architecture', () => {
   const document = new JSDOM(html).window.document;
-  site.applyDownloads(document, siteConfig, {userAgent:'Linux Android 14'});
+  site.applyDownloads(document, unpublished, {userAgent:'Linux Android 14'});
   for (const link of document.querySelectorAll('[data-download]')) {
     assert.equal(link.hasAttribute('href'), false);
     assert.equal(link.getAttribute('aria-disabled'), 'true');
@@ -46,7 +47,7 @@ test('unpublished packages produce no download href, while published links retai
   assert.equal(document.querySelector('[data-download="macX64"]').hasAttribute('href'), false);
   assert.match(document.querySelector('[data-platform-hint]').textContent, /芯片|架构/);
   assert.equal(document.querySelectorAll('[data-download][href]').length, 3);
-  site.applyDownloads(document, siteConfig, {userAgent:'iPhone'});
+  site.applyDownloads(document, unpublished, {userAgent:'iPhone'});
   assert.equal(document.querySelectorAll('[data-download][href]').length, 0, 'Removing configuration must remove stale URLs');
   assert.match(document.querySelector('[data-platform-hint]').textContent, /iOS|iPhone/);
   assert.equal(document.querySelectorAll('.is-recommended').length, 0);

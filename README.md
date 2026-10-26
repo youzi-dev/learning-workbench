@@ -4,7 +4,7 @@
 
 [官网与平台选择](https://youzi-dev.github.io/learning-workbench/) · [GitHub 版本页](https://github.com/youzi-dev/learning-workbench/releases) · [交付状态](docs/releases/personal-workbench-acceptance.md)
 
-版本页中实际发布的附件才是可下载产物。本 README 中的版本号、构建命令和目标平台不表示附件已上传。当前是私人分发预发布路线，手工与真机验收已由用户豁免，不声称已执行；应用商店发布、公开签名和公证是独立状态。
+[0.11.1 预览版已发布](https://github.com/youzi-dev/learning-workbench/releases/tag/v0.11.1)，包含 Android、Windows x64、Mac Apple Silicon、Intel Mac 与自建服务端部署包。附件 SHA-256 已与本地逐一核对。当前尚未完成所有设备实际安装验证；应用商店发布、商业代码签名和 Apple 公证是独立状态。
 
 ## 从今天开始使用
 
