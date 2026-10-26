@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "policyVersion": 2,
   "omitWorkflows": true,
-  "sourceTreeSha256": "1b47dc596e47db6f7d7a890c6b78479d8dd3fc07c123680034ceef2a52314f36",
+  "sourceTreeSha256": "b13168f8a129804a6064b8da66c80bc971caa529441dc4165175dfaaa84a5b61",
   "files": [
     {
       "path": ".dockerignore",
@@ -1176,8 +1176,8 @@
     },
     {
       "path": "scripts/verify-release.mjs",
-      "bytes": 11462,
-      "sha256": "d309f4105a3232faf73b1dfd978fa2b3cf579907dd41486b1d37cc7d86148334",
+      "bytes": 11460,
+      "sha256": "6053a4964efa3994c5961cb38f25112a4b6a1d8f8b12cbac408240ebf5c7959a",
       "mode": "0644"
     },
     {
@@ -3000,8 +3000,8 @@
     },
     {
       "path": "tests/release-packaging.check.mjs",
-      "bytes": 9126,
-      "sha256": "a232b7417345196c4db64a145a5256ddde80743a531c911386ad22581beb2011",
+      "bytes": 9142,
+      "sha256": "c1a479608cc0d3cf316fb5d2451850ac8178788d8bec739c2e25d31b085acd8e",
       "mode": "0644"
     },
     {

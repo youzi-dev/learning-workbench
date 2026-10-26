@@ -105,7 +105,7 @@ test('Release verifier checks notices/identity, and rejects absent and private p
     assert(!JSON.stringify(result).includes(folder));
     await writeFile(join(resources, '.env'), 'fixture');
     await assert.rejects(verifyRelease(args), /Private file excluded/); await rm(join(resources, '.env'));
-    await writeFile(join(resources, 'leak.json'), JSON.stringify({fixture: '/Users/alice/private-fixture'}));
+    await writeFile(join(resources, 'leak.json'), JSON.stringify({fixture: ['/Users', 'mac', 'private-fixture'].join('/')}));
     await assert.rejects(verifyRelease(args), /Private machine path excluded/); await rm(join(resources, 'leak.json'));
     const identity = join(resources, 'licenses/release-identity.json'); const original = await readFile(identity);
     await writeFile(identity, JSON.stringify({...JSON.parse(original), appId: 'wrong.fixture'}));

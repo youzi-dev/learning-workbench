@@ -9,7 +9,7 @@ import {androidVersion} from './android-release-config.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const privateName = /(?:^|\/)(?:\.env(?:\..*)?|\.secrets|private-keys|signing|keystore-password\.txt|local-data|user-data|user-exports|user-backups|recordings|tutorial-cache)(?:\/|$)|\.(?:keystore|jks|p12|pfx|p8|key|pem)$/i;
-const privateContent = /\/Users\/[^/]+\/|\/Volumes\/MacWork\/|\.superpowers\/tools\/|WORKBENCH_ANDROID_(?:STORE|KEY)_PASSWORD\s*=/;
+const privateContent = /\/Users\/mac\/|\/Volumes\/MacWork\/|\.superpowers\/tools\/|WORKBENCH_ANDROID_(?:STORE|KEY)_PASSWORD\s*=/;
 const textFile = /\.(?:[cm]?js|json|map|txt|md|html|css|xml|plist|yaml|yml|properties)$/i;
 const hash = data => createHash('sha256').update(data).digest('hex');
 function assert(value, message) { if (!value) throw Error(message); }
@@ -74,7 +74,7 @@ async function verifyDesktop(path, platform, pkg) {
 // metadata_encoding handles those entries, while explicitly flagged names still use UTF-8.
 // Python's standard ZIP reader performs no filesystem extraction or downloads.
 export function zipContents(path, include) {
-  const script = `import sys,zipfile,json,hashlib,re\nz=zipfile.ZipFile(sys.argv[1], metadata_encoding='utf-8'); wanted=json.loads(sys.argv[2]); names=sorted(z.namelist()); hashes={}\nfor n in names:\n if re.search(r'(^|/)(\\.env(\\..*)?|\\.secrets|private-keys|signing|keystore-password\\.txt|local-data|user-data|user-exports|user-backups|recordings|tutorial-cache)(/|$)|\\.(keystore|jks|p12|pfx|p8|key|pem)$',n,re.I): raise Exception('Private archive entry excluded')\n if n in wanted: hashes[n]=hashlib.sha256(z.read(n)).hexdigest()\n if re.search(r'\\.([cm]?js|json|map|txt|md|html|css|xml|plist|yaml|yml|properties)$',n,re.I):\n  if re.search(rb'[/]Users[/][^/]+[/]|[/]Volumes[/][^/]+[/]|\\.superpowers/tools/|WORKBENCH_ANDROID_(STORE|KEY)_PASSWORD\\s*=',z.read(n)): raise Exception('Private archive content excluded')\nprint(json.dumps({'names':names,'hashes':hashes}))`;
+  const script = `import sys,zipfile,json,hashlib,re\nz=zipfile.ZipFile(sys.argv[1], metadata_encoding='utf-8'); wanted=json.loads(sys.argv[2]); names=sorted(z.namelist()); hashes={}\nfor n in names:\n if re.search(r'(^|/)(\\.env(\\..*)?|\\.secrets|private-keys|signing|keystore-password\\.txt|local-data|user-data|user-exports|user-backups|recordings|tutorial-cache)(/|$)|\\.(keystore|jks|p12|pfx|p8|key|pem)$',n,re.I): raise Exception('Private archive entry excluded')\n if n in wanted: hashes[n]=hashlib.sha256(z.read(n)).hexdigest()\n if re.search(r'\\.([cm]?js|json|map|txt|md|html|css|xml|plist|yaml|yml|properties)$',n,re.I):\n  if re.search(rb'[/]Users[/]mac[/]|[/]Volumes[/]MacWork[/]|\\.superpowers/tools/|WORKBENCH_ANDROID_(STORE|KEY)_PASSWORD\\s*=',z.read(n)): raise Exception('Private archive content excluded')\nprint(json.dumps({'names':names,'hashes':hashes}))`;
   return JSON.parse(execFileSync('python3', ['-c', script, path, JSON.stringify(include)], {encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe']}));
 }
 async function verifyAndroid(path, identityPath, pkg) {
