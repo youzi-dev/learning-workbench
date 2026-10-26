@@ -1,14 +1,17 @@
 <!doctype html>
 <html lang="zh-CN">
+<!-- Content ranking: primary = choose a real platform download; secondary = daily workflow;
+     tertiary = learning module/source/privacy. Reuse current grayscale spacing/type hierarchy,
+     palette #f8f9f6/#272a28/#42634c, 20px card radius, 20px gaps, responsive 820px breakpoint. -->
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="学习工作台，把原站阅读、原创 JavaScript 实践和可选 AI 帮助放在一起。从知道，到能做。了解真实的平台进度、源码与数据边界。">
+  <meta name="description" content="日常工作台：记录一天、安排待办与日程、保存资料，并保留学习模块。选择 Android、Windows 或 Mac 预发布版本。">
   <meta name="theme-color" content="#f8f9f6">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="学习工作台 · 从知道，到能做">
-  <meta property="og:description" content="先读懂，自己动手，再用实际产出看见进步。">
-  <title>学习工作台 · 从知道，到能做</title>
+  <meta property="og:title" content="日常工作台 · 让资料接上行动">
+  <meta property="og:description" content="保存资料，说明用途，安排下一步；每天回看完成与未完成的事。">
+  <title>日常工作台 · 让资料接上行动</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./styles.css">
   <script type="module" src="./app.js"></script>
@@ -31,14 +34,14 @@
 
   <header class="site-header">
     <div class="shell header-inner">
-      <a class="brand" href="#main" aria-label="学习工作台首页">
+      <a class="brand" href="#main" aria-label="日常工作台首页">
         <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></span>
-        <span>学习工作台</span>
+        <span>日常工作台</span>
       </a>
       <nav class="site-nav" aria-label="主要导航">
         <a href="#features">功能</a>
-        <a href="#method">学习方式</a>
-        <a href="#platforms">平台进度</a>
+        <a href="#method">使用方式</a>
+        <a href="#platforms">下载</a>
         <a class="nav-source" data-project-link="source" href="#project-status">源码与进展 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
       </nav>
     </div>
@@ -47,20 +50,20 @@
   <main id="main">
     <section class="hero shell" aria-labelledby="hero-heading">
       <div class="hero-copy">
-        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>给正在学着写代码的你</p>
-        <h1 id="hero-heading">从知道，<br>到能做</h1>
-        <p class="hero-description">把阅读、动手、排错和复述，<br class="wide-only">放在同一张工作台上。</p>
-        <p class="hero-detail">先看懂一个小问题，再亲手写出能运行的代码。需要时，让 AI 帮你跨过眼前的一步。</p>
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>Personal Workbench · 0.11.1 预发布</p>
+        <h1 id="hero-heading">让资料，<br>接上行动</h1>
+        <p class="hero-description">记录今天，安排下一步，<br class="wide-only">把学习留在日常里。</p>
+        <p class="hero-detail">日常记录、待办、日程与资料放在一起。保存时写清用途，随后安排要做的事，晚上回看完成与未完成。</p>
         <div class="actions">
-          <a class="button button-primary" href="#start">了解开始方式 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          <a class="button button-secondary" data-project-link="builds" href="#project-status">查看构建状态</a>
+          <a class="button button-primary" href="#platforms">选择平台下载 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="button button-secondary" data-project-link="docs" href="#project-status">查看使用说明</a>
         </div>
-        <p class="hero-note">本机数据 · 自选模型 · 原创离线实践</p>
+        <p class="hero-note">本机优先 · 三端客户端 · 保留学习模块</p>
       </div>
 
       <figure class="workflow-preview">
         <div class="preview-window">
-          <div class="preview-titlebar"><span class="preview-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>学习工作台 · 工作流示意</span></div>
+          <div class="preview-titlebar"><span class="preview-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>保留学习模块 · 流程示意</span></div>
           <div class="preview-content">
             <div class="lesson-preview"><span class="preview-label"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>先看一个例子</span><h2>函数：把输入变成结果</h2><p>参数是输入，<code>return</code> 把结果交给调用者。</p></div>
             <div class="code-preview"><div class="code-title"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span>自己写 · JavaScript</span></div><pre><code><span class="code-keyword">function</span> greeting(name) {
@@ -75,61 +78,52 @@
     </section>
 
     <section class="section shell" id="features" aria-labelledby="features-heading">
-      <div class="section-heading"><p class="eyebrow">把学习落到动作上</p><h2 id="features-heading">读得明白，也有地方动手。</h2><p>从一个具体问题开始，把理解变成看得见的产出。</p></div>
+      <div class="section-heading"><p class="eyebrow">围绕一天的工作</p><h2 id="features-heading">记下来，也安排得下去。</h2><p>从收集资料，到安排后续，再到回顾结果，保持同一条工作线。</p></div>
       <div class="feature-grid">
-        <article class="feature-card"><span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></span><h3>原站阅读</h3><p>在工作台中阅读菜鸟教程原网页，保留文章原有内容与结构。AI 帮助放在右侧，需要时再打开。</p><span class="card-footnote">阅读和提问，在一个工作区。</span></article>
-        <article class="feature-card"><span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg></span><h3>原创离线实践</h3><p>从函数、列表处理、路径与响应三个 JavaScript 单元起步。编辑代码，本机运行，对照每条预期与实际结果。</p><span class="card-footnote">无需 API Key，无需 Docker。</span></article>
-        <article class="feature-card"><span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg></span><h3>按需获得帮助</h3><p>先自己尝试，再逐步查看提示。选择自己的模型与接口，围绕当前材料提问，把结论带回自己的理解。</p><span class="card-footnote">你的接口，你决定何时使用。</span></article>
+        <article class="feature-card"><span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span><h3>日常记录与待办</h3><p>记下今天发生的事，把需要处理的内容变成待办。每天查看已完成和未完成，继续接上手头的工作。</p><span class="card-footnote">记录与行动互相连接。</span></article>
+        <article class="feature-card"><span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span><h3>日程与资料</h3><p>把事项放到日历中，保存文件、网址和阅读材料。为资料说明用途，随后安排阅读、整理或其他下一步。</p><span class="card-footnote">本地文件可先保存、再阅读。</span></article>
+        <article class="feature-card"><span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></span><h3>继续动手学习</h3><p>保留原站阅读、原创 JavaScript 实践和可选 AI 教学。先学，再写代码、运行并保存自己的解释。</p><span class="card-footnote">原有学习数据保留。</span></article>
       </div>
     </section>
 
     <section class="method-section" id="method" aria-labelledby="method-heading">
       <div class="shell method-inner">
-        <div class="section-heading"><p class="eyebrow">一次推进一步</p><h2 id="method-heading">先学，再用产出验证。</h2><p>看过讲解只是起点。自己的代码、运行结果和解释，才是继续前进的依据。</p></div>
+        <div class="section-heading"><p class="eyebrow">保存资料—说明用途—安排后续</p><h2 id="method-heading">收集之后，有明确的下一步。</h2><p>把资料留在需要它的事情旁边，避免收藏后再也找不到。</p></div>
         <ol class="steps">
-          <li><span class="step-number">01</span><div><h3>读懂一个小问题</h3><p>看概念、最小代码和预期现象，知道它在实际工程中的位置。确认学过，再进入任务。</p></div></li>
-          <li><span class="step-number">02</span><div><h3>写出来，跑一下</h3><p>自己编辑代码，查看具体反馈。卡住时逐层看提示；每次尝试保留代码、结果和帮助程度。</p></div></li>
-          <li><span class="step-number">03</span><div><h3>说清楚，再回来看</h3><p>用自己的话解释做法。次日起尝试变化任务，看能否把理解用在新的输入和条件上。</p></div></li>
+          <li><span class="step-number">01</span><div><h3>保存一份资料</h3><p>导入文件或保存链接，在本机继续整理。自动获取网址内容需要自行部署服务端，受来源与访问权限限制。</p></div></li>
+          <li><span class="step-number">02</span><div><h3>写清用途，安排事项</h3><p>说明为什么保存，把下一步变成待办或日程。到了时间，沿着事项找到相关材料。</p></div></li>
+          <li><span class="step-number">03</span><div><h3>每天回看</h3><p>查看今天完成了什么、还有什么未完成。需要继续学习的内容，可以带回保留的学习模块。</p></div></li>
         </ol>
       </div>
-      <div class="shell evidence-note"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><p>通过用例说明完成了这次任务。多次独立完成和自己的解释，能提供更多学习证据；软件不会承诺“保证学会”。</p></div>
-    </section>
-
-    <section class="section shell start-section" id="start" aria-labelledby="start-heading">
-      <div class="section-heading"><p class="eyebrow">从这里开始</p><h2 id="start-heading">先体验，再配置自己的模型。</h2><p>不必先购买模型服务，就能了解学习流程。</p></div>
-      <div class="start-grid">
-        <article class="start-card"><h3><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg>试试动手学习</h3><p>在桌面应用中打开「动手学习」，选择一个单元。先看最小例子，确认学过，再编辑并运行你的代码。</p><p>内置原创实践可以离线使用；读取原站文章和在线 AI 需要网络。</p></article>
-        <article class="start-card"><h3><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg>需要 AI 时再连接</h3><p>进入「设置 → 模型与接口」，填写自己的 API Key、接口与模型。测试连接会向所选接口发送一个短请求。</p><p>模型服务由你自行选择，使用费用与数据处理规则以对应服务商为准。</p></article>
-      </div>
-      <div class="setup-links"><a class="text-link" data-project-link="docs" href="#project-status">查看完整使用与构建说明 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="text-link" data-project-link="release" href="#platforms"><span data-release-label>查看平台进度</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
     </section>
 
     <section class="section shell platform-section" id="platforms" aria-labelledby="platform-heading">
-      <div class="section-heading"><p class="eyebrow">公开进度，逐个平台验证</p><h2 id="platform-heading">当前能用到哪一步。</h2><p>构建成功和真实设备上的使用验收，分别记录。</p></div>
+      <div class="section-heading"><p class="eyebrow">选择设备 · 0.11.1 预发布</p><h2 id="platform-heading">下载日常工作台。</h2><p data-platform-hint>请选择设备平台；Mac 请先在「关于本机」确认芯片类型。</p></div>
       <div class="platform-grid">
-        <article class="platform-card"><div class="platform-title"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><h3>Mac</h3></div><p class="status-badge status-available">本机试验版</p><p>当前以 Apple Silicon 本机使用为主。Mac 包为 ad-hoc 签名，未完成公证，尚不作为正式公开安装包分发。</p></article>
-        <article class="platform-card"><div class="platform-title"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><h3>Windows</h3></div><p class="status-badge">开发包已构建 · 待真机</p><p>未签名 x64 开发安装包已生成并核对内容。安装、卸载、麦克风、朗读与系统行为仍需 Windows 设备验证，暂未公开下载。</p></article>
-        <article class="platform-card"><div class="platform-title"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg><h3>手机</h3></div><p class="status-badge" data-browser-status>适配中</p><p data-browser-description>移动学习体验正在适配。本官网可用手机阅读；手机端学习应用暂未提供公开版本。</p><a class="text-link" data-project-link="browser" data-browser-entry href="#platforms" hidden>打开学习体验 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></article>
+        <article class="platform-card" data-platform="android"><div class="platform-title"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg><h3>Android</h3></div><p class="status-badge" data-recommendation hidden>推荐此设备</p><p>Android 10 及以上。可直接下载安装，后续版本沿用相同应用签名。首发不包含 iPhone / iPad。</p><div class="download-options"><a class="button button-secondary" data-download="android" data-download-label="Android APK" aria-disabled="true">Android APK · 准备中</a></div></article>
+        <article class="platform-card" data-platform="windows"><div class="platform-title"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><h3>Windows</h3></div><p class="status-badge" data-recommendation hidden>推荐此设备</p><p>Windows x64 安装包。当前为未签名开发分发版；系统可能提示未知发布者。首次安装后在本机开始使用。</p><div class="download-options"><a class="button button-secondary" data-download="windowsX64" data-download-label="Windows x64" aria-disabled="true">Windows x64 · 准备中</a></div></article>
+        <article class="platform-card" data-platform="mac"><div class="platform-title"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><h3>Mac</h3></div><p class="status-badge" data-recommendation hidden>推荐此设备</p><p>在「关于本机」查看：M 系列选 Apple Silicon；Intel 处理器选 Intel。下载后解压安装。当前尚未通过 Apple 公证，系统可能提示无法验证开发者。</p><div class="download-options" aria-label="Mac 芯片选择"><a class="button button-secondary" data-download="macArm64" data-download-label="Apple Silicon" aria-disabled="true">Apple Silicon · 准备中</a><a class="button button-secondary" data-download="macX64" data-download-label="Intel Mac" aria-disabled="true">Intel Mac · 准备中</a></div></article>
       </div>
-      <p class="platform-note">可分发版本完成验收后，会在这里接入真实发布入口。当前进展请查看 <a data-project-link="builds" href="#project-status">构建记录</a>。</p>
+      <p class="platform-note">当前为预览版，尚未完成所有设备的实际安装验证。安装或升级前，建议先导出一份数据备份。<a data-project-link="release" href="#platforms">查看版本状态</a></p>
+      <noscript><p class="platform-note">启用 JavaScript 可查看平台推荐与已发布下载链接；也可到 <a href="https://github.com/youzi-dev/learning-workbench/releases">GitHub 版本页</a> 手动查看。</p></noscript>
     </section>
 
     <section class="section shell privacy-section" id="privacy" aria-labelledby="privacy-heading">
-      <div class="section-heading"><p class="eyebrow">数据与边界</p><h2 id="privacy-heading">知道内容存在哪里，发给谁。</h2><p>没有在线账户。学习记录由桌面应用保存在本机。</p></div>
+      <div class="section-heading"><p class="eyebrow">数据与边界</p><h2 id="privacy-heading">知道内容存在哪里，发给谁。</h2><p>本地功能可先用；跨设备同步和网址自动获取需要自建服务端，项目不提供现成云服务。</p></div>
       <div class="privacy-grid">
-        <article><h3><svg class="icon" aria-hidden="true"><use href="#i-folder"/></svg>学习记录在本机</h3><p>聊天、代码、尝试结果和解释保存在本机。你可以导出备份；备份包含学习内容和设置，妥善保管后再决定是否分享。</p></article>
-        <article><h3><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>接口与语音有明确边界</h3><p>主动发起 AI 请求时，相关材料、消息与教学偏好会发送到你选择的服务商。配置的 API Key 不进入学习备份；桌面录音由 SenseVoice 在本机转为草稿。</p></article>
+        <article><h3><svg class="icon" aria-hidden="true"><use href="#i-folder"/></svg>日常与学习记录在本机</h3><p>日常记录、待办、日程、资料与学习内容保存在本机。升级保留原有学习数据；导出便携备份后请另行保存。运营者还需独立配置服务端备份。</p></article>
+        <article><h3><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>接口与语音有明确边界</h3><p>主动发起 AI 请求时，相关材料、消息与教学偏好会发送到你选择的服务商；API Key 不进入便携备份。同步需配置自己的 HTTPS 服务与账号；自动采集受来源、权限和服务端策略限制。</p></article>
       </div>
       <p class="license-note">原创代码采用 MIT 许可；第三方依赖、语音引擎与模型遵循各自许可。<a data-project-link="license" href="#project-status">查看主项目许可</a> · <a data-project-link="notices" href="#project-status">第三方说明</a></p>
       <p class="website-privacy">本官网没有分析追踪、外部字体或表单。页面由 GitHub Pages 托管后，访问请求仍由托管服务处理。</p>
     </section>
 
     <section class="shell project-section" id="project-status" aria-labelledby="project-heading">
-      <div><p class="eyebrow">项目状态</p><h2 id="project-heading" data-source-title>源码与官网入口，正在准备公开。</h2><p data-source-state>公开仓库与构建入口接入后，会在此提供链接。当前平台状态以本页说明为准；尚未提供正式公开安装包。</p></div>
-      <a class="button button-primary" data-project-link="source" data-unavailable-href="#platforms" href="#platforms">查看项目进展 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <div><p class="eyebrow">项目状态</p><h2 id="project-heading" data-source-title>源码公开，分发状态分别记录。</h2><p data-source-state>公开仓库提供经过筛选的源码快照，不包含私人开发历史。源码公开不等于云服务已部署，也不等于商店发布、公开签名或设备验收。</p></div>
+      <a class="button button-primary" data-project-link="source" data-unavailable-href="#platforms" href="#platforms">查看公开源码 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
     </section>
   </main>
 
-  <footer class="site-footer"><div class="shell footer-inner"><a class="brand footer-brand" href="#main"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></span><span>学习工作台</span></a><p>从知道，到能做。</p><nav aria-label="页脚导航"><a href="#privacy">数据与隐私</a><a data-project-link="docs" href="#project-status">使用说明</a><a data-project-link="source" href="#project-status">GitHub</a></nav></div></footer>
+  <footer class="site-footer"><div class="shell footer-inner"><a class="brand footer-brand" href="#main"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></span><span>日常工作台</span></a><p>记录今天，接上下一步。</p><nav aria-label="页脚导航"><a href="#privacy">数据与隐私</a><a data-project-link="docs" href="#project-status">使用说明</a><a data-project-link="source" href="#project-status">GitHub</a></nav></div></footer>
 </body>
 </html>
